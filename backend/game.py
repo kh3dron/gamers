@@ -12,32 +12,38 @@ class Go:
         self.moves = []
         self.captured_black = 0
         self.captured_white = 0
-        
+
     def __str__(self):
         return str(self.board)
-        
+    
     def show(self):
-        print()
+        print("   ", end="")
+        for col_label in range(self.board_size):
+            print(f" {col_label} ", end="")
+        print("\n   " + "---" * self.board_size)
+        
         for i in range(self.board_size):
+            print(f"{i}| ", end="")
             for j in range(self.board_size):
                 if self.board[i, j] == 0:
-                    print('🟨', end='')
+                    print('🟧 ', end='')
                 elif self.board[i, j] == 1:
-                    print('🟦', end='')
+                    print('⬛ ', end='')
                 else:
-                    print('🟥', end='')
+                    print('⬜ ', end='')
             print()
-        
+        print()
         
     def is_empty(self, i, j):
         return self.board[i, j] == 0
     
     def place_stone(self, i, j):
+
         if self.is_empty(i, j):
             self.board[i, j] = self.player
             self.moves.append((i, j))
         else:
-            raise Exception('Invalid move: ({}, {}) occupied'.format(i, j))        
+            raise Exception('Invalid move: ({}, {}) occupied'.format(i, j))
         
         self.player = 1 if self.player == 2 else 2
 
@@ -46,10 +52,23 @@ class Go:
             self.ended = True
         else:
             self.moves.append((-1, -1))
-            self.player = 1 if self.player == 2 else 2
-        
+        self.player = 1 if self.player == 2 else 2
+
         return
         
+    def get_possible_moves(self):
+            
+            open = np.array(self.board == 0, dtype=int)
+            
+            for i in range(self.board_size):
+                for j in range(self.board_size):
+                    if self.is_empty(i, j):
+                        open[i, j] = self.is_empty(i, j)
+                        
+            if len(self.moves) > 1:
+                open[self.moves[-1]] = False
+            return open
+
     def get_groups(self, color):
         # The group matrix contains a unique number for each group of stones of the same color.
         # The liberties matrix contains a count of liberties for each group.
@@ -112,7 +131,7 @@ class Go:
         return liberties
     
     def process_captures(self, color):
-        # for each group of the opposite color, check if it has 0 liberties. 
+        # for each group of this color, check if it has 0 liberties. 
         # If so, remove the group and add the number of stones to the captured stones count.
         groups = self.get_groups(color)
         liberties = self.get_liberties(color)
@@ -120,7 +139,6 @@ class Go:
         
         for g in range(1, groups.max() + 1):
             if liberties[g-1].sum() == 0: #a group has been surrounded!
-                
                 for i in range(self.board_size):
                     for j in range(self.board_size):
                         if groups[i, j] == g:
@@ -129,12 +147,17 @@ class Go:
                                 self.captured_black += 1
                             else:
                                 self.captured_white += 1
-        
         return
-        
-        
-        
-    
+
     def get_winner(self):
-        if self.captured_black > self.captured_white:
+    
+        # count all 1s and 2s on the board
+        black = np.count_nonzero(self.board == 1) + self.captured_black
+        white = np.count_nonzero(self.board == 2) + self.captured_white
+        
+        if black > white:
             return 1
+        elif white > black:
+            return 2
+        else:
+            return 0
