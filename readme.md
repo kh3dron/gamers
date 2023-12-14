@@ -20,4 +20,3 @@ TODOs:
   - [ ] ARTIFICIAL INTELLIGENCE 
 
 - [ ] react frontend
-- [ ] Play against friends? 

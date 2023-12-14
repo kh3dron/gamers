@@ -1,0 +1,22 @@
+/* GoBoard.css */
+.go-board {
+  display: grid;
+  grid-template-columns: repeat(19, 1fr);
+  grid-template-rows: repeat(19, 1fr);
+  gap: 2px; /* Adjust the gap between intersections as needed */
+  width: 400px; /* Adjust the width of the board as needed */
+  height: 400px; /* Adjust the height of the board as needed */
+  background-color: #e0b090; /* Board color */
+  border: 2px solid #604020; /* Border color */
+}
+
+.row {
+  display: flex;
+}
+
+.intersection {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  background-color: #3d1c0c; /* Intersection color */
+}
