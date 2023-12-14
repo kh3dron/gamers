@@ -438,6 +438,30 @@ class TestGoGame(unittest.TestCase):
 
         self.assertEqual(True, True)
 
+    ### Frontend ###
+
+    def test_drawable(self):
+
+        self.game = Go(9)
+        self.game.board = np.array(
+            [
+                [0, 0, 0, 0, 0, 0, 0, 0, 0],
+                [0, 0, 2, 0, 0, 0, 0, 0, 0],
+                [0, 2, 1, 2, 0, 0, 0, 0, 0],
+                [0, 0, 2, 0, 2, 2, 0, 0, 0],
+                [0, 0, 0, 2, 1, 1, 2, 0, 0],
+                [0, 0, 0, 0, 2, 1, 2, 0, 0],
+                [0, 0, 0, 0, 0, 2, 0, 0, 0],
+                [0, 0, 0, 0, 0, 0, 0, 0, 0],
+                [0, 0, 0, 0, 0, 0, 0, 0, 0],
+            ]
+        )
+
+        print()
+        print(self.game.drawable())
+
+        self.assertEqual(True, True)
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -161,3 +161,35 @@ class Go:
             return 2
         else:
             return 0
+
+    def drawable(self):
+
+        ans = self.board.copy()
+
+        if self.board_size == 9:
+            startp = [[4, 4]]
+        elif self.board_size == 13:
+            startp = [[3, 3], [3, 9], [6, 6], [9, 3], [9, 9]]
+        else:
+            startp = [[3, 3], [3, 9], [3, 15], [9, 3], [9, 9], [9, 15], [15, 3], [15, 9], [15, 15]]
+
+        for i in range(len(startp)):
+            ans[startp[i][0]][startp[i][1]] = 11
+
+
+        for i in range(self.board_size):
+            if self.board[0, i] == 0:
+                ans[0, i] = 3
+            if self.board[self.board_size - 1, i] == 0:
+                ans[self.board_size - 1, i] = 4
+            if self.board[i, 0] == 0:
+                ans[i, 0] = 5
+            if self.board[i, self.board_size - 1] == 0:
+                ans[i, self.board_size - 1] = 6
+
+        ans[0][0] = 7
+        ans[0][self.board_size - 1] = 8
+        ans[self.board_size - 1][0] = 9
+        ans[self.board_size - 1][self.board_size - 1] = 10
+
+        return ans.tolist()
