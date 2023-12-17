@@ -163,6 +163,17 @@ class Go:
         else:
             return 0
 
+    def stone_scores(self):
+        # return JSON of stones on board and captured stones
+        return {
+            "white_deployed": np.count_nonzero(self.board == 2),
+            "black_deployed": np.count_nonzero(self.board == 1),
+            "captured_black": self.captured_black,
+            "captured_white": self.captured_white,
+            "black_total": np.count_nonzero(self.board == 1) + self.captured_black,
+            "white_total": np.count_nonzero(self.board == 2) + self.captured_white
+        }
+
     def drawable(self):
 
         ans = self.board.copy()

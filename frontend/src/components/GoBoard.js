@@ -18,7 +18,7 @@ import dr from './assets/dr.png';
 import s from './assets/s.png';
 
 const GoBoard = ({ onClick }) => {
-  const cellSize = 70; // Adjust the size as needed
+  const cellSize = 50;
 
   const assetStyles = {
     cell: {
@@ -33,11 +33,11 @@ const GoBoard = ({ onClick }) => {
   const [boardState, setBoardState] = useState([]);
 
   useEffect(() => {
-    // Fetch initial board state from localhost:3001/get_board
     fetch('http://localhost:3001/get_board')
       .then(response => response.json())
       .then(data => setBoardState(data))
       .catch(error => console.error('Error fetching initial board state:', error));
+    getData();
   }, []); // Empty dependency array to run the effect only once
 
   const handleCellClick = (rowIndex, colIndex) => {
@@ -52,37 +52,50 @@ const GoBoard = ({ onClick }) => {
     })
       .then(response => response.json())
       .then(updatedState => {
-        // Update the board state with the response
         setBoardState(updatedState);
-        // Call the provided onClick callback
         onClick(rowIndex, colIndex);
       })
       .catch(error => console.error('Error updating board state:', error));
-  };  
+    getData();
+  };
+
+  function getData() {
+    fetch('http://localhost:3001/gamestats')
+      .then(response => response.json())
+      .then(data => {
+        document.getElementById('boardState').innerHTML = JSON.stringify(data, null, 2);
+      })
+      .catch(error => console.error('Error fetching data:', error));
+  }
 
   return (
-    <div style={{ display: 'grid', gridTemplateColumns: `repeat(${boardState.length}, ${cellSize}px)` }}>
-      {boardState.map((row, rowIndex) =>
-        row.map((cell, colIndex) => (
-          <div key={`${rowIndex}-${colIndex}`} style={assetStyles.cell} onClick={() => handleCellClick(rowIndex, colIndex)}>
-            {cell === 0 && <img src={empty} alt="Empty" style={assetStyles.cell} />}
-            {cell === 1 && <img src={white} alt="White" style={assetStyles.cell} />}
-            {cell === 2 && <img src={black} alt="Black" style={assetStyles.cell} />}
+    <div>
+      <div style={{ display: 'grid', gridTemplateColumns: `repeat(${boardState.length}, ${cellSize}px)` }}>
+        {boardState.map((row, rowIndex) =>
+          row.map((cell, colIndex) => (
+            <div key={`${rowIndex}-${colIndex}`} style={assetStyles.cell} onClick={() => handleCellClick(rowIndex, colIndex)}>
+              {cell === 0 && <img src={empty} alt="Empty" style={assetStyles.cell} />}
+              {cell === 1 && <img src={white} alt="White" style={assetStyles.cell} />}
+              {cell === 2 && <img src={black} alt="Black" style={assetStyles.cell} />}
 
-            {cell === 3 && <img src={up} alt="Up" style={assetStyles.cell} />}
-            {cell === 4 && <img src={down} alt="Down" style={assetStyles.cell} />}
-            {cell === 5 && <img src={left} alt="Left" style={assetStyles.cell} />}
-            {cell === 6 && <img src={right} alt="Right" style={assetStyles.cell} />}
+              {cell === 3 && <img src={up} alt="Up" style={assetStyles.cell} />}
+              {cell === 4 && <img src={down} alt="Down" style={assetStyles.cell} />}
+              {cell === 5 && <img src={left} alt="Left" style={assetStyles.cell} />}
+              {cell === 6 && <img src={right} alt="Right" style={assetStyles.cell} />}
 
-            {cell === 7 && <img src={ul} alt="Up Left" style={assetStyles.cell} />}
-            {cell === 8 && <img src={ur} alt="Up Right" style={assetStyles.cell} />}
-            {cell === 9 && <img src={dl} alt="Down Left" style={assetStyles.cell} />}
-            {cell === 10 && <img src={dr} alt="Down Right" style={assetStyles.cell} />}
+              {cell === 7 && <img src={ul} alt="Up Left" style={assetStyles.cell} />}
+              {cell === 8 && <img src={ur} alt="Up Right" style={assetStyles.cell} />}
+              {cell === 9 && <img src={dl} alt="Down Left" style={assetStyles.cell} />}
+              {cell === 10 && <img src={dr} alt="Down Right" style={assetStyles.cell} />}
 
-            {cell === 11 && <img src={s} alt="Star" style={assetStyles.cell} />}
-          </div>
-        ))
-      )}
+              {cell === 11 && <img src={s} alt="Star" style={assetStyles.cell} />}
+            </div>
+          ))
+        )}
+      </div>
+
+      <h1>Board State:</h1>
+      <div id="boardState"></div>
     </div>
   );
 };
