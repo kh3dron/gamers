@@ -1,0 +1,13 @@
+version: '3'
+
+tasks:
+    backend:
+        cmds:
+            - python3 backend/server.py
+    frontend:
+        cmds:
+            - cd frontend && npm start
+    fullstack:
+        cmds:
+            - task backend &
+            - task frontend
