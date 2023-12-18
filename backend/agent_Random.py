@@ -5,11 +5,6 @@ class agent_Random:
     def __init__(self, passAt=0.5):
         self.passAt = passAt
 
-    def random_choice(self, game):
-        random_index = np.random.choice(len(options))
-        row, col = ones_indices[random_index]
-        return (row, col)
-
     def turn(self, game):
         grid_size = game.board_size**2
         options = np.argwhere(game.get_possible_moves() == 1)

@@ -1,11 +1,18 @@
 from flask import Flask, request, jsonify
-from game import Go
 from flask_cors import CORS
+
+from game import Go
+from agent_Random import agent_Random
+
+game = Go(19)
+agent_Random = agent_Random()
+
 
 app = Flask(__name__)
 CORS(app)
 
-game = Go(19)
+
+
 
 
 @app.route('/place_stone', methods=['PUT'])
@@ -32,6 +39,18 @@ def reset():
 @app.route('/gamestats', methods=['GET'])
 def placed_stones():
     return game.stone_scores()
+
+@app.route('/agent_random', methods=['PUT'])
+def agent_random():
+    try:
+        move = agent_Random.turn(game)
+        game.place_stone(move[0], move[1])
+        return jsonify(game.drawable())
+
+    except Exception as e:
+        print("Agent Random Error:", e)
+        return jsonify(game.drawable())
+
 
 if __name__ == '__main__':
     app.run(port=3001, debug=True)

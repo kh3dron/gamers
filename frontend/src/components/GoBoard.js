@@ -96,7 +96,7 @@ const GoBoard = ({ onClick }) => {
 
       <h1>Board State:</h1>
       <div id="boardState"></div>
-    </div>
+          </div>
   );
 };
 
