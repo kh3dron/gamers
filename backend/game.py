@@ -1,89 +1,85 @@
 import numpy as np
 
+
 class Go:
-    
     def __init__(self, board_size):
         self.board_size = board_size
-        self.board = np.zeros((board_size, board_size), dtype=int)
-        self.player = 1 # 1 = black, 2 = white
-        
+
+        """
+        Each 2 layers represent a state of the board, the current player's stones and the opponent's stones.
+        These 8 pairs of layers are stacked on top of each other to form a tensor of shape (board_size, board_size, 16).
+        The last layer is a single layer of shape (board_size, board_size) that represents the current player - 1 for black, 0 for white.
+        Last layer starts with 1s since black goes first.
+        """
+
+        self.board = np.zeros((board_size, board_size, 17), dtype=int)
+        self.board[:, :, 16] = 1
+
         self.ended = False
-        
+
         self.moves = []
         self.captured_black = 0
         self.captured_white = 0
+        self.player = self.board[0, 0, 16]
+
+
 
     def __str__(self):
-        return str(self.board)
-    
+        return str(self.board.tolist())
+
     def show(self):
-        print("   ", end="")
-        for col_label in range(self.board_size):
-            print(f" {col_label} ", end="")
-        print("\n   " + "---" * self.board_size)
-        
-        for i in range(self.board_size):
-            print(f"{i}| ", end="")
-            for j in range(self.board_size):
-                if self.board[i, j] == 0:
-                    print('🟧 ', end='')
-                elif self.board[i, j] == 1:
-                    print('⬛ ', end='')
-                else:
-                    print('⬜ ', end='')
-            print()
-        print()
-        
+        ret = np.zeros((self.board_size, self.board_size), dtype=int)
+        state1 = self.board[:, :, 0]
+        state2 = self.board[:, :, 8]
+
+        if self.board[0, 0, 16] == 1:  # if current player is black
+            ret[state1 == 1] = 1
+            ret[state2 == 1] = 2
+        else:
+            ret[state1 == 1] = 2
+            ret[state2 == 1] = 1
+
+        return ret.tolist()
+
     def is_empty(self, i, j):
-        return self.board[i, j] == 0
-    
+        return self.board[i, j, 0] == 0 and self.board[i, j, 8] == 0
+
+    # This function assumes the move is valid, IE not on an existing stone or KO violation.
+    # Passes are handled as a move to (-1, -1). 
     def place_stone(self, i, j):
 
-        if self.is_empty(i, j):
-            self.board[i, j] = self.player
-            self.moves.append((i, j))
-            self.process_captures(1 if self.player == 2 else 2)
-        else:
-            raise Exception('Invalid move: ({}, {}) occupied'.format(i, j))
-        
-        self.player = 1 if self.player == 2 else 2
+        # bump historic states down by 2
+        self.board[:, :, 2:16] = self.board[:, :, 0:14]
 
-    def pass_turn(self):
-        if self.moves and self.moves[-1] == (-1, -1): #double pass
-            self.ended = True
-        else:
-            self.moves.append((-1, -1))
-        self.player = 1 if self.player == 2 else 2
+        # place stone in current player's frame. IF pass, no new stone is placed.
+        if not i == -1 and j == -1:
+            self.board[i, j, 0] = 1
 
-        return
-        
+        # alternate current player: switch frames 0:1, 2:3, 4:5, etc
+        self.board[:, :, 0:14:2], self.board[:, :, 1:15:2] = self.board[:, :, 1:15:2], self.board[:, :, 0:14:2]
+
+        # switch state layer 16
+        self.board[:, :, 16] = 0 if self.board[0, 0, 16] == 1 else 1
+
+        # add move to history
+        self.moves.append((i, j))
+
     def get_possible_moves(self):
-            
-            open = np.array(self.board == 0, dtype=int)
-            
-            for i in range(self.board_size):
-                for j in range(self.board_size):
-                    if self.is_empty(i, j):
-                        open[i, j] = self.is_empty(i, j)
-                        
-            if len(self.moves) > 1:
-                open[self.moves[-1]] = False
-            return open
+        opens = self.board[:, :, 0] == 0 and self.board[:, :, 1] == 0
+        if len(self.moves) > 1:
+            opens[self.moves[-1]] = False
+        return opens
 
-    def get_groups(self, color):
-        # The group matrix contains a unique number for each group of stones of the same color.
-        # The liberties matrix contains a count of liberties for each group.
-
+    def get_groups(self, frame):
         groups = np.zeros((self.board_size, self.board_size), dtype=int)
         visited = set()
         group_number = 1
 
         for i in range(self.board_size):
             for j in range(self.board_size):
-                if self.board[i, j] == color and (i, j) not in visited:
-                    group, liberty_set = self._dfs(color, i, j, visited)
+                if self.board[i, j, frame] == 1 and (i, j) not in visited:
+                    group, liberty_set = self._dfs(i, j, frame, visited)
 
-                    # Assign group number to the group cells
                     for x, y in group:
                         groups[x, y] = group_number
 
@@ -91,7 +87,7 @@ class Go:
 
         return groups
 
-    def _dfs(self, color, start_x, start_y, visited):
+    def _dfs(self, start_x, start_y, frame, visited):
         group = set()
         liberty_set = set()
         stack = [(start_x, start_y)]
@@ -102,56 +98,65 @@ class Go:
                 visited.add((x, y))
                 group.add((x, y))
 
-                # Check and add liberties
                 for nx, ny in [(x-1, y), (x+1, y), (x, y-1), (x, y+1)]:
                     if 0 <= nx < self.board_size and 0 <= ny < self.board_size:
-                        if self.board[nx, ny] == 0:
+                        if self.board[nx, ny, frame] == 0:
                             liberty_set.add((nx, ny))
 
-                # Check and add neighboring stones of the same color
                 for nx, ny in [(x-1, y), (x+1, y), (x, y-1), (x, y+1)]:
                     if 0 <= nx < self.board_size and 0 <= ny < self.board_size:
-                        if self.board[nx, ny] == color:
+                        if self.board[nx, ny, frame] == 1:
                             stack.append((nx, ny))
 
         return group, liberty_set
 
-    def get_liberties(self, color):
-        # Returns an array with 1 for each cell that is a liberty of the group
+    def get_liberties(self, frame):
+        groups = self.get_groups(frame)
+        opponent_frame = 1 if frame == 0 else 0
 
-        groups = self.get_groups(color)
         count_groups = groups.max()
         liberties = np.zeros(shape=(count_groups, self.board_size, self.board_size), dtype=int)
-        
+
         for g in range(1, count_groups + 1):
             first_cell = np.where(groups == g)
-            _, l = self._dfs(color, first_cell[0][0], first_cell[1][0], set())
+            _, l = self._dfs(first_cell[0][0], first_cell[1][0], opponent_frame, set())
             for x, y in l:
                 liberties[g-1, x, y] = 1
-            
+
         return liberties
-    
-    def process_captures(self, color):
-        # for each group of this color, check if it has 0 liberties. 
-        # If so, remove the group and add the number of stones to the captured stones count.
-        groups = self.get_groups(color)
-        liberties = self.get_liberties(color)
-        
-        
+
+
+    def process_captures(self, frame):
+        groups = self.get_groups(frame)
+        liberties = self.get_liberties(frame)
+
         for g in range(1, groups.max() + 1):
-            if liberties[g-1].sum() == 0: #a group has been surrounded!
+            if liberties[g-1].sum() == 0:
                 for i in range(self.board_size):
                     for j in range(self.board_size):
                         if groups[i, j] == g:
-                            self.board[i, j] = 0
-                            if color == 1:
-                                self.captured_black += 1
+                            self.board[i, j, frame] = 0
+
+                            if frame == 0:
+                                if self.board[i, j, 16] == 1:
+                                    self.captured_black += 1
+                                else:
+                                    self.captured_white += 1
                             else:
-                                self.captured_white += 1
+                                if self.board[i, j, 16] == 1:
+                                    self.captured_white += 1
+                                else:
+                                    self.captured_black += 1
         return
 
+    def crunch_board_state(self):
+        # See if current player has capatured any stones
+        self.process_captures(frame=0)
+        # See if any ataris have been created
+        self.process_captures(frame=1)
+
+
     def get_winner(self):
-    
         # count all 1s and 2s on the board
         black = np.count_nonzero(self.board == 1) + self.captured_black
         white = np.count_nonzero(self.board == 2) + self.captured_white
@@ -171,11 +176,10 @@ class Go:
             "captured_black": self.captured_black,
             "captured_white": self.captured_white,
             "black_total": np.count_nonzero(self.board == 1) + self.captured_black,
-            "white_total": np.count_nonzero(self.board == 2) + self.captured_white
+            "white_total": np.count_nonzero(self.board == 2) + self.captured_white,
         }
 
     def drawable(self):
-
         ans = self.board.copy()
 
         if self.board_size == 9:
@@ -183,12 +187,21 @@ class Go:
         elif self.board_size == 13:
             startp = [[3, 3], [3, 9], [6, 6], [9, 3], [9, 9]]
         else:
-            startp = [[3, 3], [3, 9], [3, 15], [9, 3], [9, 9], [9, 15], [15, 3], [15, 9], [15, 15]]
+            startp = [
+                [3, 3],
+                [3, 9],
+                [3, 15],
+                [9, 3],
+                [9, 9],
+                [9, 15],
+                [15, 3],
+                [15, 9],
+                [15, 15],
+            ]
 
         for i in range(len(startp)):
             if self.board[startp[i][0]][startp[i][1]] == 0:
                 ans[startp[i][0]][startp[i][1]] = 11
-
 
         for i in range(self.board_size):
             if self.board[0, i] == 0:

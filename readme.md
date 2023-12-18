@@ -1,3 +1,6 @@
+Implementing a self-playing Go model. 
+
+
 Game features needed:
 
 - [x] be able to place moves
@@ -14,6 +17,7 @@ TODOs:
 - Game Logic: 
   - [ ] Compute the score of a given board (Complex: simple + controlled territories) 
   - [ ] Refactor board state to be constant size instead of O(groups) 
+  - [ ] Remove need for moves[] list
 
 - Sophisticated Agents
   - [ ] Train policy network to evaluate board value
