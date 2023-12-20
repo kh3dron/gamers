@@ -52,17 +52,21 @@ class Go:
         self.board[:, :, 2:16] = self.board[:, :, 0:14]
 
         # place stone in current player's frame. IF pass, no new stone is placed.
-        if not i == -1 and j == -1:
+        if not (i == -1 and j == -1):
             self.board[i, j, 0] = 1
 
         # alternate current player: switch frames 0:1, 2:3, 4:5, etc
-        self.board[:, :, 0:14:2], self.board[:, :, 1:15:2] = self.board[:, :, 1:15:2], self.board[:, :, 0:14:2]
-
+        for e in range(0, 16, 2):
+            temp_slice = self.board[:, :, e].copy()
+            self.board[:, :, e] = self.board[:, :, e+1]
+            self.board[:, :, e+1] = temp_slice
+        
         # switch state layer 16
         self.board[:, :, 16] = 0 if self.board[0, 0, 16] == 1 else 1
 
         # add move to history
         self.moves.append((i, j))
+        return
 
     def get_possible_moves(self):
         opens = self.board[:, :, 0] == 0 and self.board[:, :, 1] == 0
