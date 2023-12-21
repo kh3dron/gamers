@@ -63,10 +63,12 @@ const GoBoard = ({ onClick }) => {
     fetch('http://localhost:3001/gamestats')
       .then(response => response.json())
       .then(data => {
-        document.getElementById('boardState').innerHTML = JSON.stringify(data, null, 2);
+        const formattedJson = JSON.stringify(data, null, 2);
+        document.getElementById('boardState').innerHTML = `<pre style="white-space: pre-wrap;">${formattedJson}</pre>`;
       })
       .catch(error => console.error('Error fetching data:', error));
   }
+  
 
   return (
     <div>

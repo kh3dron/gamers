@@ -1,7 +1,7 @@
 # Huey Plays Go: implementing self-playing Go models. 
 
 Motivations for this project: 
-- Go's mechanics are extremely simple, but the stace space of games is vast, making it a great application for ML.
+- Go's mechanics are extremely simple, but the state space of games is vast, making it a great application for ML.
 - I got interested in Go a few months ago, and I'd like to track my own progress in terms of the size of models I can beat. ELO scores are one thing, but I think it would be cooler to know how many parameters my own neural net has. 
 
 

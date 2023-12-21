@@ -33,11 +33,11 @@ class Go:
         state2 = self.board[:, :, 1]
 
         if self.board[0, 0, 16] == 1:  # if current player is black
-            ret[state1 == 1] = "1"
-            ret[state2 == 1] = "2"
+            ret[state1 == 1] = 1
+            ret[state2 == 1] = 2
         else:
-            ret[state1 == 1] = "2"
-            ret[state2 == 1] = "1"
+            ret[state1 == 1] = 2
+            ret[state2 == 1] = 1
 
         return ret
 
@@ -67,7 +67,7 @@ class Go:
         # add move to history
         self.moves.append((i, j))
 
-        #self.crunch_board_state()
+        self.crunch_board_state()
 
         return
 
@@ -111,7 +111,6 @@ class Go:
 
         return groups
 
-
     def get_liberties(self, frame):
         groups = self.get_groups(frame)
 
@@ -138,8 +137,6 @@ class Go:
                 liberties[g-1, x, y] = 1
 
         return liberties
-
-
 
     def process_captures(self, frame):
         groups = self.get_groups(frame)
@@ -180,17 +177,19 @@ class Go:
 
     def stone_scores(self):
         # return JSON of stones on board and captured stones
+        state = self.show()
+        print(state)
         return {
-            "white_deployed": np.count_nonzero(self.board == 2),
-            "black_deployed": np.count_nonzero(self.board == 1),
+            "white_alive": np.count_nonzero(state == 2),
+            "black_alive": np.count_nonzero(state == 1),
             "captured_black": self.captured_black,
             "captured_white": self.captured_white,
-            "black_total": np.count_nonzero(self.board == 1) + self.captured_black,
-            "white_total": np.count_nonzero(self.board == 2) + self.captured_white,
+            "black_total_points": np.count_nonzero(state == 1) + self.captured_white,
+            "white_total_points": np.count_nonzero(state == 2) + self.captured_black,
         }
 
     def drawable(self):
-        ans = self.board.copy()
+        ans = self.show()
 
         if self.board_size == 9:
             startp = [[4, 4]]
@@ -210,17 +209,17 @@ class Go:
             ]
 
         for i in range(len(startp)):
-            if self.board[startp[i][0]][startp[i][1]] == 0:
+            if ans[startp[i][0]][startp[i][1]] == 0:
                 ans[startp[i][0]][startp[i][1]] = 11
 
         for i in range(self.board_size):
-            if self.board[0, i] == 0:
+            if ans[0, i] == 0:
                 ans[0, i] = 3
-            if self.board[self.board_size - 1, i] == 0:
+            if ans[self.board_size - 1, i] == 0:
                 ans[self.board_size - 1, i] = 4
-            if self.board[i, 0] == 0:
+            if ans[i, 0] == 0:
                 ans[i, 0] = 5
-            if self.board[i, self.board_size - 1] == 0:
+            if ans[i, self.board_size - 1] == 0:
                 ans[i, self.board_size - 1] = 6
 
         if ans[0][0] == 5:
