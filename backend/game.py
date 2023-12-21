@@ -30,16 +30,16 @@ class Go:
     def show(self):
         ret = np.zeros((self.board_size, self.board_size), dtype=int)
         state1 = self.board[:, :, 0]
-        state2 = self.board[:, :, 8]
+        state2 = self.board[:, :, 1]
 
         if self.board[0, 0, 16] == 1:  # if current player is black
-            ret[state1 == 1] = 1
-            ret[state2 == 1] = 2
+            ret[state1 == 1] = "1"
+            ret[state2 == 1] = "2"
         else:
-            ret[state1 == 1] = 2
-            ret[state2 == 1] = 1
+            ret[state1 == 1] = "2"
+            ret[state2 == 1] = "1"
 
-        return ret.tolist()
+        return ret
 
     def is_empty(self, i, j):
         return self.board[i, j, 0] == 0 and self.board[i, j, 8] == 0
@@ -66,7 +66,14 @@ class Go:
 
         # add move to history
         self.moves.append((i, j))
+
+        #self.crunch_board_state()
+
         return
+
+    def place_stone_sequence(self, sequence):
+        for move in sequence:
+            self.place_stone(move[0], move[1])
 
     def get_possible_moves(self):
         opens = self.board[:, :, 0] == 0 and self.board[:, :, 1] == 0
@@ -82,7 +89,20 @@ class Go:
         for i in range(self.board_size):
             for j in range(self.board_size):
                 if self.board[i, j, frame] == 1 and (i, j) not in visited:
-                    group, liberty_set = self._dfs(i, j, frame, visited)
+                    stack = [(i, j)]
+                    group = set()
+
+                    while stack:
+                        x, y = stack.pop()
+
+                        if (x, y) not in visited:
+                            visited.add((x, y))
+                            group.add((x, y))
+                            
+                            for nx, ny in [(x-1, y), (x+1, y), (x, y-1), (x, y+1)]:
+                                if 0 <= nx < self.board_size and 0 <= ny < self.board_size:
+                                    if self.board[nx, ny, frame] == 1 and (nx, ny) not in visited:
+                                        stack.append((nx, ny))
 
                     for x, y in group:
                         groups[x, y] = group_number
@@ -91,73 +111,59 @@ class Go:
 
         return groups
 
-    def _dfs(self, start_x, start_y, frame, visited):
-        group = set()
-        liberty_set = set()
-        stack = [(start_x, start_y)]
-
-        while stack:
-            x, y = stack.pop()
-            if (x, y) not in visited:
-                visited.add((x, y))
-                group.add((x, y))
-
-                for nx, ny in [(x-1, y), (x+1, y), (x, y-1), (x, y+1)]:
-                    if 0 <= nx < self.board_size and 0 <= ny < self.board_size:
-                        if self.board[nx, ny, frame] == 0:
-                            liberty_set.add((nx, ny))
-
-                for nx, ny in [(x-1, y), (x+1, y), (x, y-1), (x, y+1)]:
-                    if 0 <= nx < self.board_size and 0 <= ny < self.board_size:
-                        if self.board[nx, ny, frame] == 1:
-                            stack.append((nx, ny))
-
-        return group, liberty_set
 
     def get_liberties(self, frame):
         groups = self.get_groups(frame)
-        opponent_frame = 1 if frame == 0 else 0
+
+        occupied_stones = self.board[:, :, 0] + self.board[:, :, 1]
 
         count_groups = groups.max()
         liberties = np.zeros(shape=(count_groups, self.board_size, self.board_size), dtype=int)
 
         for g in range(1, count_groups + 1):
-            first_cell = np.where(groups == g)
-            _, l = self._dfs(first_cell[0][0], first_cell[1][0], opponent_frame, set())
-            for x, y in l:
+            group_indices = np.where(groups == g)
+            adjacent_stones = set()
+            
+            for x, y in zip(group_indices[0], group_indices[1]):
+                for nx, ny in [(x-1, y), (x+1, y), (x, y-1), (x, y+1)]:
+                    if 0 <= nx < self.board_size and 0 <= ny < self.board_size:
+                        adjacent_stones.add((nx, ny))
+            
+            # Remove duplicates and eliminate occupied stones
+            liberties_indices = set(adjacent_stones) - set(zip(group_indices[0], group_indices[1]))
+            liberties_indices = [(x, y) for x, y in liberties_indices if occupied_stones[x, y] == 0]
+            
+            # Write to liberties array
+            for x, y in liberties_indices:
                 liberties[g-1, x, y] = 1
 
         return liberties
+
 
 
     def process_captures(self, frame):
         groups = self.get_groups(frame)
         liberties = self.get_liberties(frame)
 
-        for g in range(1, groups.max() + 1):
-            if liberties[g-1].sum() == 0:
-                for i in range(self.board_size):
-                    for j in range(self.board_size):
-                        if groups[i, j] == g:
-                            self.board[i, j, frame] = 0
+        for e in range(len(liberties)): 
+            if liberties[e, :, :].sum() == 0:
 
-                            if frame == 0:
-                                if self.board[i, j, 16] == 1:
-                                    self.captured_black += 1
-                                else:
-                                    self.captured_white += 1
-                            else:
-                                if self.board[i, j, 16] == 1:
-                                    self.captured_white += 1
-                                else:
-                                    self.captured_black += 1
+                # set all stones in group to 0 on the board
+                group = np.where(groups == e+1)
+                self.board[group[0], group[1], frame] = 0
+
+                if frame == 0:
+                    self.captured_black += len(group[0])
+                else:
+                    self.captured_white += len(group[0])
+
         return
 
     def crunch_board_state(self):
         # See if current player has capatured any stones
         self.process_captures(frame=0)
         # See if any ataris have been created
-        self.process_captures(frame=1)
+        #self.process_captures(frame=0)
 
 
     def get_winner(self):
