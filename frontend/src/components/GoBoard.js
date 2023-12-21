@@ -40,23 +40,25 @@ const GoBoard = ({ onClick }) => {
     getData();
   }, []); // Empty dependency array to run the effect only once
 
-  const handleCellClick = (rowIndex, colIndex) => {
-    fetch('http://localhost:3001/place_stone', {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        move: { row: rowIndex, col: colIndex },
-      }),
-    })
-      .then(response => response.json())
-      .then(updatedState => {
-        setBoardState(updatedState);
-        onClick(rowIndex, colIndex);
-      })
-      .catch(error => console.error('Error updating board state:', error));
-    getData();
+  const handleCellClick = async (rowIndex, colIndex) => {
+    try {
+      const response = await fetch('http://localhost:3001/place_stone', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          move: { row: rowIndex, col: colIndex },
+        }),
+      });
+
+      const updatedState = await response.json();
+      setBoardState(updatedState);
+      onClick(rowIndex, colIndex);
+      getData(); // Call /gamestats after the place_stone function is complete
+    } catch (error) {
+      console.error('Error updating board state:', error);
+    }
   };
 
   function getData() {

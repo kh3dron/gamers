@@ -29,15 +29,16 @@ class Go:
 
     def show(self):
         ret = np.zeros((self.board_size, self.board_size), dtype=int)
-        state1 = self.board[:, :, 0]
-        state2 = self.board[:, :, 1]
+
+        state0 = self.board[:, :, 0]
+        state1 = self.board[:, :, 1]
 
         if self.board[0, 0, 16] == 1:  # if current player is black
-            ret[state1 == 1] = 1
-            ret[state2 == 1] = 2
-        else:
+            ret[state0 == 1] = 1
             ret[state1 == 1] = 2
-            ret[state2 == 1] = 1
+        else:
+            ret[state0 == 1] = 2
+            ret[state1 == 1] = 1
 
         return ret
 
