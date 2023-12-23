@@ -34,6 +34,7 @@ def get_game_state():
 
 @app.route('/reset', methods=['GET'])
 def reset():
+    global game
     game = Go(BOARD_SIZE)
     return jsonify(game.drawable())
 
