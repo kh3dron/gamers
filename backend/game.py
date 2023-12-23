@@ -5,24 +5,14 @@ class Go:
     def __init__(self, board_size):
         self.board_size = board_size
 
-        """
-        Each 2 layers represent a state of the board, the current player's stones and the opponent's stones.
-        These 8 pairs of layers are stacked on top of each other to form a tensor of shape (board_size, board_size, 16).
-        The last layer is a single layer of shape (board_size, board_size) that represents the current player - 1 for black, 0 for white.
-        Last layer starts with 1s since black goes first.
-        """
-
         self.board = np.zeros((board_size, board_size, 17), dtype=int)
         self.board[:, :, 16] = 1
 
         self.ended = False
-
         self.moves = []
         self.captured_black = 0
         self.captured_white = 0
         self.player = self.board[0, 0, 16]
-
-
 
     def __str__(self):
         return str(self.board.tolist())
@@ -49,6 +39,12 @@ class Go:
     # Passes are handled as a move to (-1, -1). 
     def place_stone(self, i, j):
 
+        if self.ended:
+            return
+
+        if self.board[i, j, 0] == 1 or self.board[i, j, 1] == 1:
+            raise Exception("Illegal Move")
+
         # bump historic states down by 2
         self.board[:, :, 2:16] = self.board[:, :, 0:14]
 
@@ -67,6 +63,8 @@ class Go:
 
         # add move to history
         self.moves.append((i, j))
+        if self.moves[-2:] == [(-1, -1), (-1, -1)]:
+            self.ended = True
 
         self.crunch_board_state()
 
@@ -77,10 +75,10 @@ class Go:
             self.place_stone(move[0], move[1])
 
     def get_possible_moves(self):
-        opens = self.board[:, :, 0] == 0 and self.board[:, :, 1] == 0
+        flat = self.board[:, :, 0] + self.board[:, :, 1]
         if len(self.moves) > 1:
-            opens[self.moves[-1]] = False
-        return opens
+            flat[self.moves[-1]] = 1
+        return flat == 0
 
     def get_groups(self, frame):
         groups = np.zeros((self.board_size, self.board_size), dtype=int)
@@ -154,7 +152,6 @@ class Go:
                     self.captured_black += len(group[0])
                 else:
                     self.captured_white += len(group[0])
-
         return
 
     def crunch_board_state(self):
@@ -162,7 +159,6 @@ class Go:
         self.process_captures(frame=0)
         # See if any ataris have been created
         #self.process_captures(frame=0)
-
 
     def get_winner(self):
         # count all 1s and 2s on the board
@@ -179,8 +175,9 @@ class Go:
     def stone_scores(self):
         # return JSON of stones on board and captured stones
         state = self.show()
-        print(state)
-        return {
+
+        scores = {
+            "game_over": self.ended,
             "white_alive": np.count_nonzero(state == 2),
             "black_alive": np.count_nonzero(state == 1),
             "captured_black": self.captured_black,
@@ -188,6 +185,8 @@ class Go:
             "black_total_points": np.count_nonzero(state == 1) + self.captured_white,
             "white_total_points": np.count_nonzero(state == 2) + self.captured_black,
         }
+
+        return scores
 
     def drawable(self):
         ans = self.show()

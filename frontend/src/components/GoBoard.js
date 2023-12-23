@@ -38,7 +38,7 @@ const GoBoard = ({ onClick }) => {
       .then(data => setBoardState(data))
       .catch(error => console.error('Error fetching initial board state:', error));
     getData();
-  }, []); // Empty dependency array to run the effect only once
+  }, []);
 
   const handleCellClick = async (rowIndex, colIndex) => {
     try {
@@ -55,7 +55,52 @@ const GoBoard = ({ onClick }) => {
       const updatedState = await response.json();
       setBoardState(updatedState);
       onClick(rowIndex, colIndex);
-      getData(); // Call /gamestats after the place_stone function is complete
+      getData();
+      playRandom();
+      getData();
+
+    } catch (error) {
+      console.error('Error updating board state:', error);
+    }
+  };
+
+  const handlePassClick = async () => {
+    try {
+      const response = await fetch('http://localhost:3001/place_stone', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          move: { row: -1, col: -1 },
+        }),
+      });
+
+      const updatedState = await response.json();
+      setBoardState(updatedState);
+      onClick(-1, -1);
+      getData();
+      playRandom();
+      getData();
+
+    } catch (error) {
+      console.error('Error updating board state:', error);
+    }
+  };
+
+  const resetGame = async () => {
+    try {
+      const response = await fetch('http://localhost:3001/reset', {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        }
+      });
+
+      const updatedState = await response.json();
+      setBoardState(updatedState);
+      getData();
+
     } catch (error) {
       console.error('Error updating board state:', error);
     }
@@ -71,6 +116,21 @@ const GoBoard = ({ onClick }) => {
       .catch(error => console.error('Error fetching data:', error));
   }
   
+  const playRandom = async (rowIndex, colIndex) => {
+    try {
+      const response = await fetch('http://localhost:3001/agent_random', {
+        method: 'GET',
+      });
+
+      const updatedState = await response.json();
+      setBoardState(updatedState);
+      onClick(rowIndex, colIndex);
+      getData();
+
+    } catch (error) {
+      console.error('Error uplaying random move:', error);
+    }
+  };
 
   return (
     <div>
@@ -97,6 +157,10 @@ const GoBoard = ({ onClick }) => {
           ))
         )}
       </div>
+
+      <button onClick={() => handlePassClick()}>Pass</button>
+      <br></br>
+      <button onClick={() => resetGame()}>Reset Game</button>
 
       <h1>Board State:</h1>
       <div id="boardState"></div>

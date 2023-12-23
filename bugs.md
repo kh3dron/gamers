@@ -1,0 +1,2 @@
+- When playing against random agent in web UI, once random starts passing, player makes their moves for them
+- players can play self capturing moves
