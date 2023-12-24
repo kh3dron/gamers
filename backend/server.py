@@ -7,7 +7,7 @@ from agent_Random import agent_Random
 import time
 
 
-BOARD_SIZE = 9
+BOARD_SIZE = 13
 game = Go(BOARD_SIZE)
 agent_Random = agent_Random()
 
@@ -46,7 +46,7 @@ def placed_stones():
 def agent_random():
     print("Agent Random")
     try:
-        sleep_time = 0.5
+        sleep_time = 0.2
         time.sleep(sleep_time)
         move = agent_Random.turn(game)
         game.place_stone(move[0], move[1])

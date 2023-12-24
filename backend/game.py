@@ -36,9 +36,8 @@ class Go:
         return self.board[i, j, 0] == 0 and self.board[i, j, 8] == 0
 
     # This function assumes the move is valid, IE not on an existing stone or KO violation.
-    # Passes are handled as a move to (-1, -1). 
+    # Passes are handled as a move to (-1, -1).
     def place_stone(self, i, j):
-
         if self.ended:
             return
 
@@ -55,9 +54,9 @@ class Go:
         # alternate current player: switch frames 0:1, 2:3, 4:5, etc
         for e in range(0, 16, 2):
             temp_slice = self.board[:, :, e].copy()
-            self.board[:, :, e] = self.board[:, :, e+1]
-            self.board[:, :, e+1] = temp_slice
-        
+            self.board[:, :, e] = self.board[:, :, e + 1]
+            self.board[:, :, e + 1] = temp_slice
+
         # switch state layer 16
         self.board[:, :, 16] = 0 if self.board[0, 0, 16] == 1 else 1
 
@@ -121,7 +120,6 @@ class Go:
         for g in range(1, count_groups + 1):
             group_indices = np.where(groups == g)
             adjacent_stones = set()
-            
             for x, y in zip(group_indices[0], group_indices[1]):
                 for nx, ny in [(x-1, y), (x+1, y), (x, y-1), (x, y+1)]:
                     if 0 <= nx < self.board_size and 0 <= ny < self.board_size:
@@ -141,11 +139,10 @@ class Go:
         groups = self.get_groups(frame)
         liberties = self.get_liberties(frame)
 
-        for e in range(len(liberties)): 
+        for e in range(len(liberties)):
             if liberties[e, :, :].sum() == 0:
-
                 # set all stones in group to 0 on the board
-                group = np.where(groups == e+1)
+                group = np.where(groups == e + 1)
                 self.board[group[0], group[1], frame] = 0
 
                 if frame == 0:
@@ -155,10 +152,8 @@ class Go:
         return
 
     def crunch_board_state(self):
-        # See if current player has capatured any stones
         self.process_captures(frame=0)
-        # See if any ataris have been created
-        #self.process_captures(frame=0)
+        # More will be needed here
 
     def get_winner(self):
         # count all 1s and 2s on the board
@@ -189,7 +184,8 @@ class Go:
         return scores
 
     def drawable(self):
-        ans = self.show()
+        state = self.show()
+        ans = state
 
         if self.board_size == 9:
             startp = [[4, 4]]
@@ -222,13 +218,13 @@ class Go:
             if ans[i, self.board_size - 1] == 0:
                 ans[i, self.board_size - 1] = 6
 
-        if ans[0][0] == 5:
+        if ans[0][0] == 3:
             ans[0][0] = 7
-        if ans[0][self.board_size - 1] == 3:
+        if ans[0][self.board_size - 1] == 6:
             ans[0][self.board_size - 1] = 8
-        if ans[self.board_size - 1][0] == 5:
+        if ans[self.board_size - 1][0] == 4:
             ans[self.board_size - 1][0] = 9
-        if ans[self.board_size - 1][self.board_size - 1] == 6:
+        if ans[self.board_size - 1][self.board_size - 1] == 4:
             ans[self.board_size - 1][self.board_size - 1] = 10
 
         return ans.tolist()

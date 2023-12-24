@@ -18,6 +18,8 @@ import dr from './assets/dr.png';
 import s from './assets/s.png';
 
 const GoBoard = ({ onClick }) => {
+  const [isProcessingMove, setIsProcessingMove] = useState(false);
+
   const cellSize = 50;
 
   const assetStyles = {
@@ -41,7 +43,12 @@ const GoBoard = ({ onClick }) => {
   }, []);
 
   const handleCellClick = async (rowIndex, colIndex) => {
+    if (isProcessingMove) {
+      return;
+    }
     try {
+      setIsProcessingMove(true); // Set to true to disable further clicks
+
       const response = await fetch('http://localhost:3001/place_stone', {
         method: 'PUT',
         headers: {
@@ -56,11 +63,12 @@ const GoBoard = ({ onClick }) => {
       setBoardState(updatedState);
       onClick(rowIndex, colIndex);
       getData();
-      playRandom();
+      await playRandom(); // Await the random move
       getData();
-
     } catch (error) {
       console.error('Error updating board state:', error);
+    } finally {
+      setIsProcessingMove(false); // Reset to false to enable further clicks
     }
   };
 
@@ -115,7 +123,7 @@ const GoBoard = ({ onClick }) => {
       })
       .catch(error => console.error('Error fetching data:', error));
   }
-  
+
   const playRandom = async (rowIndex, colIndex) => {
     try {
       const response = await fetch('http://localhost:3001/agent_random', {
@@ -164,7 +172,7 @@ const GoBoard = ({ onClick }) => {
 
       <h1>Board State:</h1>
       <div id="boardState"></div>
-          </div>
+    </div>
   );
 };
 
