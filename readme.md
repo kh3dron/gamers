@@ -42,3 +42,4 @@ TODOs:
     - [ ] NNs with X parameters & Y compute-hours
 
 - [ ] More GUIs everywhere
+- [ ] Export game to GPT and save for later model use

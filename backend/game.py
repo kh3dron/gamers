@@ -42,7 +42,7 @@ class Go:
             return
 
         if self.board[i, j, 0] == 1 or self.board[i, j, 1] == 1:
-            raise Exception("Illegal Move")
+            raise Exception("Illegal Move at {}, {}".format(i, j))
 
         # bump historic states down by 2
         self.board[:, :, 2:16] = self.board[:, :, 0:14]

@@ -7,7 +7,7 @@ from agent_Random import agent_Random
 import time
 
 
-BOARD_SIZE = 13
+BOARD_SIZE = 9
 game = Go(BOARD_SIZE)
 agent_Random = agent_Random()
 

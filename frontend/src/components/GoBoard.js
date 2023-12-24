@@ -43,7 +43,8 @@ const GoBoard = ({ onClick }) => {
   }, []);
 
   const handleCellClick = async (rowIndex, colIndex) => {
-    if (isProcessingMove) {
+    if (isProcessingMove || boardState[rowIndex][colIndex] == 1 || boardState[rowIndex][colIndex] == 2) {
+      // If processing move or there's already a stone, return early
       return;
     }
     try {
@@ -141,37 +142,40 @@ const GoBoard = ({ onClick }) => {
   };
 
   return (
-    <div>
-      <div style={{ display: 'grid', gridTemplateColumns: `repeat(${boardState.length}, ${cellSize}px)` }}>
-        {boardState.map((row, rowIndex) =>
-          row.map((cell, colIndex) => (
-            <div key={`${rowIndex}-${colIndex}`} style={assetStyles.cell} onClick={() => handleCellClick(rowIndex, colIndex)}>
-              {cell === 0 && <img src={empty} alt="Empty" style={assetStyles.cell} />}
-              {cell === 1 && <img src={white} alt="White" style={assetStyles.cell} />}
-              {cell === 2 && <img src={black} alt="Black" style={assetStyles.cell} />}
+    <div style={{ display: 'flex' }}>
+      <div style={{ flexShrink: 0, marginRight: '20px' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: `repeat(${boardState.length}, ${cellSize}px)` }}>
+          {boardState.map((row, rowIndex) =>
+            row.map((cell, colIndex) => (
+              <div key={`${rowIndex}-${colIndex}`} style={assetStyles.cell} onClick={() => handleCellClick(rowIndex, colIndex)}>
+                {cell === 0 && <img src={empty} alt="Empty" style={assetStyles.cell} />}
+                {cell === 1 && <img src={white} alt="White" style={assetStyles.cell} />}
+                {cell === 2 && <img src={black} alt="Black" style={assetStyles.cell} />}
 
-              {cell === 3 && <img src={up} alt="Up" style={assetStyles.cell} />}
-              {cell === 4 && <img src={down} alt="Down" style={assetStyles.cell} />}
-              {cell === 5 && <img src={left} alt="Left" style={assetStyles.cell} />}
-              {cell === 6 && <img src={right} alt="Right" style={assetStyles.cell} />}
+                {cell === 3 && <img src={up} alt="Up" style={assetStyles.cell} />}
+                {cell === 4 && <img src={down} alt="Down" style={assetStyles.cell} />}
+                {cell === 5 && <img src={left} alt="Left" style={assetStyles.cell} />}
+                {cell === 6 && <img src={right} alt="Right" style={assetStyles.cell} />}
 
-              {cell === 7 && <img src={ul} alt="Up Left" style={assetStyles.cell} />}
-              {cell === 8 && <img src={ur} alt="Up Right" style={assetStyles.cell} />}
-              {cell === 9 && <img src={dl} alt="Down Left" style={assetStyles.cell} />}
-              {cell === 10 && <img src={dr} alt="Down Right" style={assetStyles.cell} />}
+                {cell === 7 && <img src={ul} alt="Up Left" style={assetStyles.cell} />}
+                {cell === 8 && <img src={ur} alt="Up Right" style={assetStyles.cell} />}
+                {cell === 9 && <img src={dl} alt="Down Left" style={assetStyles.cell} />}
+                {cell === 10 && <img src={dr} alt="Down Right" style={assetStyles.cell} />}
 
-              {cell === 11 && <img src={s} alt="Star" style={assetStyles.cell} />}
-            </div>
-          ))
-        )}
+                {cell === 11 && <img src={s} alt="Star" style={assetStyles.cell} />}
+              </div>
+            ))
+          )}
+        </div>
       </div>
 
-      <button onClick={() => handlePassClick()}>Pass</button>
-      <br></br>
-      <button onClick={() => resetGame()}>Reset Game</button>
-
-      <h1>Board State:</h1>
-      <div id="boardState"></div>
+      <div>
+        <button onClick={() => handlePassClick()}>Pass</button>
+        <br />
+        <button onClick={() => resetGame()}>Reset Game</button>
+        <p>Board State:</p>
+        <div id="boardState"></div>
+      </div>
     </div>
   );
 };
