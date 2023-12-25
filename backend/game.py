@@ -41,15 +41,15 @@ class Go:
         if self.ended:
             return
 
-        if self.board[i, j, 0] == 1 or self.board[i, j, 1] == 1:
-            raise Exception("Illegal Move at {}, {}".format(i, j))
-
         # bump historic states down by 2
         self.board[:, :, 2:16] = self.board[:, :, 0:14]
 
-        # place stone in current player's frame. IF pass, no new stone is placed.
+        # if move is not a pass, and is on a free space, place stone
         if not (i == -1 and j == -1):
-            self.board[i, j, 0] = 1
+            if self.board[i, j, 0] == 1 or self.board[i, j, 1] == 1:
+                raise Exception("Illegal Move at {}, {}".format(i, j))
+            else:
+                self.board[i, j, 0] = 1
 
         # alternate current player: switch frames 0:1, 2:3, 4:5, etc
         for e in range(0, 16, 2):
