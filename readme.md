@@ -12,6 +12,9 @@ Motivations for this project:
 - A Flask backend that exposes game logic and agent access over APIs
 - A React frontend for playing games in a GUI. 
 
+- A selfplay program, which generates games played between two agents
+- A training program, which reads those games and uses them to train a model. 
+
 The representation of the game, the state tensor, is the same one used in the AlphaGo model:
 
 - One board state is a pair of matrices, one for each player, with 1s as placed stones.
@@ -28,21 +31,3 @@ self.game.place_stone(4, 4) # B2, W2, B1, W1, B0, W0
 self.game.place_stone(5, 5) # W3, B3, W2, B2, W1, B1, W0, B0
 ```
 
-TODOs: 
-
-- Game Logic: 
-  - [ ] Compute the score of a given board, factoring in controlled but unoccupied territories
-
-- Agents
-  - [ ] Write policy network to evaluate board values
-  - [ ] Agents to play against
-    - [x] Random
-    - [ ] Greedy (minmax depth 1-5?)
-      - [ ] alpha/beta pruning
-    - [ ] NNs with X parameters & Y compute-hours
-
-- [ ] More GUIs everywhere
-- [ ] Export game to GPT and save for later model use
-
-- [ ] Play game against self to generate game file
-- [ ] Handle self-capture

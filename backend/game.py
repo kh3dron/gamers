@@ -163,9 +163,8 @@ class Go:
         # More will be needed here
 
     def get_winner(self):
-        # count all 1s and 2s on the board
-        black = np.count_nonzero(self.board == 1) + self.captured_black
-        white = np.count_nonzero(self.board == 2) + self.captured_white
+        black = np.count_nonzero(self.show() == 1) + self.captured_black
+        white = np.count_nonzero(self.show() == 2) + self.captured_white
         
         if black > white:
             return 1
