@@ -43,3 +43,6 @@ TODOs:
 
 - [ ] More GUIs everywhere
 - [ ] Export game to GPT and save for later model use
+
+- [ ] Play game against self to generate game file
+- [ ] Handle self-capture

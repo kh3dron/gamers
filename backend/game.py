@@ -173,8 +173,8 @@ class Go:
 
         scores = {
             "game_over": self.ended,
-            "white_alive": np.count_nonzero(state == 2),
-            "black_alive": np.count_nonzero(state == 1),
+            "white_alive": np.count_nonzero(state == 1),
+            "black_alive": np.count_nonzero(state == 2),
             "captured_black": self.captured_black,
             "captured_white": self.captured_white,
             "black_total_points": np.count_nonzero(state == 1) + self.captured_white,
