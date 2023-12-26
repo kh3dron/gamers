@@ -35,6 +35,10 @@ class Go:
     def is_empty(self, i, j):
         return self.board[i, j, 0] == 0 and self.board[i, j, 8] == 0
 
+    # TODO
+    def move_would_self_capture(self, i, j):
+        return False
+
     # This function assumes the move is valid, IE not on an existing stone or KO violation.
     # Passes are handled as a move to (-1, -1).
     def place_stone(self, i, j):
@@ -47,9 +51,12 @@ class Go:
         # if move is not a pass, and is on a free space, place stone
         if not (i == -1 and j == -1):
             if self.board[i, j, 0] == 1 or self.board[i, j, 1] == 1:
-                raise Exception("Illegal Move at {}, {}".format(i, j))
+                raise Exception("Illegal Move at ({}, {}): Cell is Occupied".format(i, j))
             else:
-                self.board[i, j, 0] = 1
+                if self.move_would_self_capture(i, j):
+                    raise Exception("Illegal Move at ({}, {}): Self-capture is not allowed".format(i, j))
+                else:
+                    self.board[i, j, 0] = 1
 
         # alternate current player: switch frames 0:1, 2:3, 4:5, etc
         for e in range(0, 16, 2):
