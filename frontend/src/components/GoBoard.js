@@ -149,8 +149,8 @@ const GoBoard = ({ onClick }) => {
             row.map((cell, colIndex) => (
               <div key={`${rowIndex}-${colIndex}`} style={assetStyles.cell} onClick={() => handleCellClick(rowIndex, colIndex)}>
                 {cell === 0 && <img src={empty} alt="Empty" style={assetStyles.cell} />}
-                {cell === 1 && <img src={white} alt="White" style={assetStyles.cell} />}
-                {cell === 2 && <img src={black} alt="Black" style={assetStyles.cell} />}
+                {cell === -1 && <img src={white} alt="White" style={assetStyles.cell} />}
+                {cell === 1 && <img src={black} alt="Black" style={assetStyles.cell} />}
 
                 {cell === 3 && <img src={up} alt="Up" style={assetStyles.cell} />}
                 {cell === 4 && <img src={down} alt="Down" style={assetStyles.cell} />}

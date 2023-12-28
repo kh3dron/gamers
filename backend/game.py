@@ -1,5 +1,7 @@
 import numpy as np
 
+BLACK = 1
+WHITE = -1
 
 class Go:
     def __init__(self, board_size):
@@ -25,9 +27,9 @@ class Go:
 
         if self.board[0, 0, 16] == 1:  # if current player is black
             ret[state0 == 1] = 1
-            ret[state1 == 1] = 2
+            ret[state1 == 1] = -1
         else:
-            ret[state0 == 1] = 2
+            ret[state0 == 1] = -1
             ret[state1 == 1] = 1
 
         return ret
@@ -162,14 +164,17 @@ class Go:
         self.process_captures(frame=0)
         # More will be needed here
 
+    def get_points(self, color):
+        return
+    
     def get_winner(self):
         black = np.count_nonzero(self.show() == 1) + self.captured_black
-        white = np.count_nonzero(self.show() == 2) + self.captured_white
+        white = np.count_nonzero(self.show() == -1) + self.captured_white
         
         if black > white:
             return 1
         elif white > black:
-            return 2
+            return -1
         else:
             return 0
 
@@ -179,12 +184,12 @@ class Go:
 
         scores = {
             "game_over": self.ended,
-            "white_alive": np.count_nonzero(state == 1),
-            "black_alive": np.count_nonzero(state == 2),
+            "white_alive": np.count_nonzero(state == -1),
+            "black_alive": np.count_nonzero(state == 1),
             "captured_black": self.captured_black,
             "captured_white": self.captured_white,
             "black_total_points": np.count_nonzero(state == 1) + self.captured_white,
-            "white_total_points": np.count_nonzero(state == 2) + self.captured_black,
+            "white_total_points": np.count_nonzero(state == -1) + self.captured_black,
         }
 
         return scores
