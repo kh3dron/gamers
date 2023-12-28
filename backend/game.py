@@ -19,7 +19,10 @@ class Go:
     def __str__(self):
         return str(self.board.tolist())
 
-    def show(self):
+    def show(self, white=-1):
+        # White being 2 can be easier to look at when printing tensors, since all chars are equal length. 
+        # but -1 is more useful internally. 
+
         ret = np.zeros((self.board_size, self.board_size), dtype=int)
 
         state0 = self.board[:, :, 0]
@@ -27,9 +30,9 @@ class Go:
 
         if self.board[0, 0, 16] == 1:  # if current player is black
             ret[state0 == 1] = 1
-            ret[state1 == 1] = -1
+            ret[state1 == 1] = white
         else:
-            ret[state0 == 1] = -1
+            ret[state0 == 1] = white
             ret[state1 == 1] = 1
 
         return ret
@@ -39,7 +42,22 @@ class Go:
 
     # TODO
     def move_would_self_capture(self, i, j):
-        return False
+
+        # if this position is the last liberty of any group, return True
+        libs = self.get_liberties(frame=0)
+        for e in range(len(libs)):
+            if libs[e, :, :].sum() == 1 and self.game[i, j, 0] == 1:
+                print("Filling in last liberty of group", e)
+                return True
+
+        # if this cell would have no liberties itself
+        has_liberties = False
+        for nx, ny in [(i-1, j), (i+1, j), (i, j-1), (i, j+1)]:
+            if 0 <= nx < self.board_size and 0 <= ny < self.board_size:
+                if self.board[nx, ny, 1] != self.board[0, 0, 16]:
+                    has_liberties = True
+            
+        return not has_liberties
 
     # This function assumes the move is valid, IE not on an existing stone or KO violation.
     # Passes are handled as a move to (-1, -1).
@@ -164,7 +182,21 @@ class Go:
         self.process_captures(frame=0)
         # More will be needed here
 
+    """
+    Evaluation:
+    - Get all Live groups for both players
+    - Set all dead groups to 0 
+    - DFS for controlled territories bounded by edges and living groups
+    - +1 point for each eye 
+    """
     def get_points(self, color):
+        state = self.show()
+
+        if color == 1:
+            return np.count_nonzero(state == 1) + self.captured_white
+        elif color == -1:
+            return np.count_nonzero(state == -1) + self.captured_black
+        
         return
     
     def get_winner(self):
