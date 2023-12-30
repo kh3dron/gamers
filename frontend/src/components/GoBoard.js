@@ -43,12 +43,17 @@ const GoBoard = ({ onClick }) => {
   }, []);
 
   const handleCellClick = async (rowIndex, colIndex) => {
-    if (isProcessingMove || boardState[rowIndex][colIndex] == 1 || boardState[rowIndex][colIndex] == 2) {
-      // If processing move or there's already a stone, return early
-      return;
-    }
+  if (isProcessingMove || boardState[rowIndex][colIndex] == 1 || boardState[rowIndex][colIndex] == -1) {
+    // If processing move or there's already a stone, return early
+    return;
+  }
+
+  const maxAttempts = 3; // Set the maximum number of retry attempts
+  let attempts = 0;
+
+  while (attempts < maxAttempts) {
     try {
-      setIsProcessingMove(true); // Set to true to disable further clicks
+      setIsProcessingMove(true);
 
       const response = await fetch('http://localhost:3001/place_stone', {
         method: 'PUT',
@@ -64,38 +69,23 @@ const GoBoard = ({ onClick }) => {
       setBoardState(updatedState);
       onClick(rowIndex, colIndex);
       getData();
-      await playRandom(); // Await the random move
+      await playRandom();
       getData();
+
+      // If the above code runs without errors, break out of the loop
+      break;
     } catch (error) {
       console.error('Error updating board state:', error);
+      attempts++;
+
+      // You can add a delay between retry attempts if needed
+      // await new Promise(resolve => setTimeout(resolve, 1000));
     } finally {
-      setIsProcessingMove(false); // Reset to false to enable further clicks
+      setIsProcessingMove(false);
     }
-  };
+  }
+};
 
-  const handlePassClick = async () => {
-    try {
-      const response = await fetch('http://localhost:3001/place_stone', {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          move: { row: -1, col: -1 },
-        }),
-      });
-
-      const updatedState = await response.json();
-      setBoardState(updatedState);
-      onClick(-1, -1);
-      getData();
-      playRandom();
-      getData();
-
-    } catch (error) {
-      console.error('Error updating board state:', error);
-    }
-  };
 
   const resetGame = async () => {
     try {

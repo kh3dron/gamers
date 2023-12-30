@@ -29,8 +29,10 @@ class Go:
 
         # if move is not a pass, and is on a free space, place stone
         if not (i == -1 and j == -1):
-            if self.board[i, j, 0] == 1 or self.board[i, j, 1] == 1:
-                raise Exception("Illegal Move at ({}, {}): Cell is Occupied".format(i, j))
+            if self.board[i, j, 0] == 1:
+                raise Exception("Illegal Move at ({}, {}): Cell is occupied by your color".format(i, j))
+            elif self.board[i, j, 1] == 1:
+                raise Exception("Illegal Move at ({}, {}): Cell is occupied by other color".format(i, j))
             else:
                 if self.move_would_self_capture(i, j):
                     raise Exception("Illegal Move at ({}, {}): Self-capture is not allowed".format(i, j))

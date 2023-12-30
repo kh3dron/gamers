@@ -18,15 +18,14 @@ CORS(app)
 
 @app.route('/place_stone', methods=['PUT'])
 def place_stone():
-    try:
-        move = request.json.get('move')
+
+    pos = game.get_possible_moves()
+    move = request.json.get('move')
+    if pos[move["row"], move["col"]] == 0:
+        return
+    else:
         game.place_stone(move["row"], move["col"])
         return jsonify(game.gameboard_view())
-
-    except Exception as e:
-        print("Error placing stone:", e)
-        return jsonify(game.gameboard_view())
-
 
 @app.route('/get_board', methods=['GET'])
 def get_game_state():
