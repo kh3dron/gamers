@@ -16,52 +16,11 @@ class Go:
         self.captured_white = 0
         self.player = self.board[0, 0, 16]
 
-    def __str__(self):
-        return str(self.board.tolist())
-
-    def show(self, white=-1):
-        # White being 2 can be easier to look at when printing tensors, since all chars are equal length. 
-        # but -1 is more useful internally. 
-
-        ret = np.zeros((self.board_size, self.board_size), dtype=int)
-
-        state0 = self.board[:, :, 0]
-        state1 = self.board[:, :, 1]
-
-        if self.board[0, 0, 16] == 1:  # if current player is black
-            ret[state0 == 1] = 1
-            ret[state1 == 1] = white
-        else:
-            ret[state0 == 1] = white
-            ret[state1 == 1] = 1
-
-        return ret
-
-    def is_empty(self, i, j):
-        return self.board[i, j, 0] == 0 and self.board[i, j, 8] == 0
-
-    # TODO
-    def move_would_self_capture(self, i, j):
-
-        # if this position is the last liberty of any group, return True
-        libs = self.get_liberties(frame=0)
-        for e in range(len(libs)):
-            if libs[e, :, :].sum() == 1 and self.game[i, j, 0] == 1:
-                print("Filling in last liberty of group", e)
-                return True
-
-        # if this cell would have no liberties itself
-        has_liberties = False
-        for nx, ny in [(i-1, j), (i+1, j), (i, j-1), (i, j+1)]:
-            if 0 <= nx < self.board_size and 0 <= ny < self.board_size:
-                if self.board[nx, ny, 1] != self.board[0, 0, 16]:
-                    has_liberties = True
-            
-        return not has_liberties
-
-    # This function assumes the move is valid, IE not on an existing stone or KO violation.
-    # Passes are handled as a move to (-1, -1).
+# Interacting with the Game
+  
     def place_stone(self, i, j):
+        # This function assumes the move is valid, IE not on an existing stone or KO violation.
+        # Passes are handled as a move to (-1, -1).
         if self.ended:
             return
 
@@ -101,10 +60,33 @@ class Go:
             self.place_stone(move[0], move[1])
 
     def get_possible_moves(self):
-        flat = self.board[:, :, 0] + self.board[:, :, 1]
+        flat = self.view()
         if len(self.moves) > 1:
             flat[self.moves[-1]] = 1
         return flat == 0
+
+# Internal-only functions for evaluating moves
+
+    def get_ko_illegal_move(self):
+        # returns the move that cannot be played again
+        return False
+
+    def move_would_self_capture(self, i, j):
+
+        # if this position is the last liberty of any group, return True
+        libs = self.get_liberties(frame=0)
+        for e in range(len(libs)):
+            if libs[e, :, :].sum() == 1 and self.board[i, j, 0] == 1:
+                return True
+
+        # if this cell would have no liberties itself
+        has_liberties = False
+        for nx, ny in [(i-1, j), (i+1, j), (i, j-1), (i, j+1)]:
+            if 0 <= nx < self.board_size and 0 <= ny < self.board_size:
+                if self.board[nx, ny, 1] != 1:
+                    has_liberties = True
+            
+        return not has_liberties
 
     def get_groups(self, frame):
         groups = np.zeros((self.board_size, self.board_size), dtype=int)
@@ -182,52 +164,28 @@ class Go:
         self.process_captures(frame=0)
         # More will be needed here
 
-    """
-    Evaluation:
-    - Get all Live groups for both players
-    - Set all dead groups to 0 
-    - DFS for controlled territories bounded by edges and living groups
-    - +1 point for each eye 
-    """
-    def get_points(self, color):
-        state = self.show()
+# Visualizing the board
 
-        if color == 1:
-            return np.count_nonzero(state == 1) + self.captured_white
-        elif color == -1:
-            return np.count_nonzero(state == -1) + self.captured_black
-        
-        return
-    
-    def get_winner(self):
-        black = np.count_nonzero(self.show() == 1) + self.captured_black
-        white = np.count_nonzero(self.show() == -1) + self.captured_white
-        
-        if black > white:
-            return 1
-        elif white > black:
-            return -1
+    def view(self, white=-1):
+        # White being 2 can be easier to look at when printing tensors, since all chars are equal length. 
+        # but -1 is more useful internally. 
+
+        ret = np.zeros((self.board_size, self.board_size), dtype=int)
+
+        state0 = self.board[:, :, 0]
+        state1 = self.board[:, :, 1]
+
+        if self.board[0, 0, 16] == 1:  # if current player is black
+            ret[state0 == 1] = 1
+            ret[state1 == 1] = white
         else:
-            return 0
+            ret[state0 == 1] = white
+            ret[state1 == 1] = 1
 
-    def stone_scores(self):
-        # return JSON of stones on board and captured stones
-        state = self.show()
+        return ret
 
-        scores = {
-            "game_over": self.ended,
-            "white_alive": np.count_nonzero(state == -1),
-            "black_alive": np.count_nonzero(state == 1),
-            "captured_black": self.captured_black,
-            "captured_white": self.captured_white,
-            "black_total_points": np.count_nonzero(state == 1) + self.captured_white,
-            "white_total_points": np.count_nonzero(state == -1) + self.captured_black,
-        }
-
-        return scores
-
-    def drawable(self):
-        state = self.show()
+    def gameboard_view(self):
+        state = self.view()
         ans = state
 
         if self.board_size == 9:
@@ -271,3 +229,50 @@ class Go:
             ans[self.board_size - 1][self.board_size - 1] = 10
 
         return ans.tolist()
+
+# Frontend helpers   
+    def get_points(self, color):
+        state = self.view()
+
+        if color == 1:
+            return np.count_nonzero(state == 1) + self.captured_white
+        elif color == -1:
+            return np.count_nonzero(state == -1) + self.captured_black
+        
+        return
+    
+    def get_winner(self):
+
+        """
+        Complete Evaluation:
+        - Get all Live groups for both players
+        - Set all dead groups to 0 
+        - DFS for controlled territories bounded by edges and living groups
+        - +1 point for each eye 
+        """
+
+        black = np.count_nonzero(self.view() == 1) + self.captured_black
+        white = np.count_nonzero(self.view() == -1) + self.captured_white
+        
+        if black > white:
+            return 1
+        elif white > black:
+            return -1
+        else:
+            return 0
+
+    def stone_scores(self):
+        # return JSON of stones on board and captured stones
+        state = self.view()
+
+        scores = {
+            "game_over": self.ended,
+            "white_alive": np.count_nonzero(state == -1),
+            "black_alive": np.count_nonzero(state == 1),
+            "captured_black": self.captured_black,
+            "captured_white": self.captured_white,
+            "black_total_points": np.count_nonzero(state == 1) + self.captured_white,
+            "white_total_points": np.count_nonzero(state == -1) + self.captured_black,
+        }
+
+        return scores

@@ -17,3 +17,4 @@ TODOs:
 
 - [ ] Play game against self to generate game file
 - [ ] Handle self-capture
+- [ ] Ko handling needs to be more sophisticated: last move could be re-playable if more than 1 stone was captured

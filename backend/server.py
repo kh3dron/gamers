@@ -21,22 +21,22 @@ def place_stone():
     try:
         move = request.json.get('move')
         game.place_stone(move["row"], move["col"])
-        return jsonify(game.drawable())
+        return jsonify(game.gameboard_view())
 
     except Exception as e:
         print("Error placing stone:", e)
-        return jsonify(game.drawable())
+        return jsonify(game.gameboard_view())
 
 
 @app.route('/get_board', methods=['GET'])
 def get_game_state():
-    return jsonify(game.drawable())
+    return jsonify(game.gameboard_view())
 
 @app.route('/reset', methods=['GET'])
 def reset():
     global game
     game = Go(BOARD_SIZE)
-    return jsonify(game.drawable())
+    return jsonify(game.gameboard_view())
 
 @app.route('/gamestats', methods=['GET'])
 def placed_stones():
@@ -44,17 +44,16 @@ def placed_stones():
 
 @app.route('/agent_random', methods=['GET'])
 def agent_random():
-    print("Agent Random")
     try:
         sleep_time = 0.2
         time.sleep(sleep_time)
         move = agent_Random.turn(game)
         game.place_stone(move[0], move[1])
-        return jsonify(game.drawable())
+        return jsonify(game.gameboard_view())
 
     except Exception as e:
         print("Agent Random Error:", e)
-        return jsonify(game.drawable())
+        return jsonify(game.gameboard_view())
 
 
 if __name__ == '__main__':
