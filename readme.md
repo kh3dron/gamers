@@ -31,3 +31,11 @@ self.game.place_stone(4, 4) # B2, W2, B1, W1, B0, W0
 self.game.place_stone(5, 5) # W3, B3, W2, B2, W1, B1, W0, B0
 ```
 
+### Model Performance
+Times to think ahead, as measured on my M1 macbook pro: 
+
+9x9 Random:     ~0.003s per move
+9x9 Minmax1:    ~0.003s per move
+9x9 Minmax2:    ~0.1 per move
+
+So far, from very basic local tests, minmax2 > minmax 1 > random. This makes sense, since minmax models pick randomly when there's no better move in the visible tree; so random + minmax(N) models will likely linearly outperform eachother. 

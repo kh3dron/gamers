@@ -1,7 +1,19 @@
 import copy
-from dlgo.gotypes import Player, Point
-from dlgo import zobrist
-from dlgo import scoring
+from dlgo.gotypes import Player
+
+"""
+Pausing on my ground-up implementation of the game, and using code from 
+"Deep Learning with Go" textbook. 
+
+Advantages: 
+    - constant time operations everywhere, will be best for training.
+    - Less buggy
+
+Disadtanages: 
+    - Will need to add more frontend helpers to gel with react UI
+    - Will also need backend helpers (get state as pandas array) for serious training runs
+    - No longer designed from the start to match alphago model architecture 
+"""
 
 class Move():
     def __init__(self, point=None, is_pass=False, is_resign=False):
@@ -23,19 +35,17 @@ class Move():
     def resign(cls):
         return Move(is_resign=True)  
 
-class GoString:
+class GoString():
     def __init__(self, color, stones, liberties):
         self.color = color
-        self.stones = frozenset(stones)
-        self.liberties = frozenset(liberties)
-    
-    def with_liberty(self, point):
-        new_liberties = self.liberties | set([point])
-        return GoString(self.color, self.stones, new_liberties)
+        self.stones = set(stones)
+        self.liberties = set(liberties)
 
-    def without_liberty(self, point):
-        new_liberties = self.liberties - set([point])
-        return GoString(self.color, self.stones, new_liberties)
+    def remove_liberty(self, point):
+        self.liberties.remove(point)
+
+    def add_liberty(self, point):
+        self.liberties.add(point)
 
     def merged_with(self, go_string):
         assert go_string.color == self.color
@@ -52,14 +62,13 @@ class GoString:
             self.stones == other.stones and \
             self.liberties == other.liberties
     
-class Board:
+class Board():
     def __init__(self, num_rows, num_cols):
         self.num_rows = num_rows
         self.num_cols = num_cols
         self._grid = {}
-        self._hash = zobrist.EMPTY_BOARD
 
-    def place_stone(self, player, point):  
+    def place_stone(self, player, point):
      assert self.is_on_grid(point)
      assert self._grid.get(point) is None
      adjacent_same_color = []
@@ -83,14 +92,10 @@ class Board:
             new_string = new_string.merged_with(same_color_string)
         for new_string_point in new_string.stones:
             self._grid[new_string_point] = new_string
-
-        self._hash ^= zobrist.HASH_CODE[point, player]
-
         for other_color_string in adjacent_opposite_color:
-            replacement = other_color_string.without_liberty(point)
-            if replacement.num_liberties:
-                self._replace_string(other_color_string.without_liberty(point))
-            else:
+            other_color_string.remove_liberty(point)
+        for other_color_string in adjacent_opposite_color:
+            if other_color_string.num_liberties == 0:
                 self._remove_string(other_color_string)
 
     def is_on_grid(self, point):
@@ -108,10 +113,6 @@ class Board:
             return None
         return string
     
-    def _replace_string(self, new_string):
-        for point in new_string.stones:
-            self._grid[point] = new_string
-
     def _remove_string(self, string):
         for point in string.stones:
             for neighbor in point.neighbors():
@@ -119,24 +120,14 @@ class Board:
                 if neighbor_string is None:
                     continue
                 if neighbor_string is not string:
-                    self._replace_string(neighbor_string.with_liberty(point))
+                    neighbor_string.add_liberty(point)
             self._grid[point] = None
-            self._hash ^= zobrist.HASH_CODE[point, string.color]
 
-    def zobrist_hash(self):
-        return self._hash
-
-class GameState:
+class GameState():
     def __init__(self, board, next_player, previous, move):
         self.board = board
         self.next_player = next_player
         self.previous_state = previous
-        if self.previous_state is None:
-            self.previous_states = frozenset()
-        else:
-            self.previous_states = frozenset(
-                previous.previous_states |
-                {(previous.next_player, previous.board.zobrist_hash())})
         self.last_move = move
         
     def apply_move(self, move):
@@ -181,8 +172,13 @@ class GameState:
             return False
         next_board = copy.deepcopy(self.board)
         next_board.place_stone(player, move.point)
-        next_situation = (player.other, next_board.zobrist_hash())
-        return next_situation in self.previous_states
+        next_situation = (player.other, next_board)
+        past_state = self.previous_state
+        while past_state is not None:
+            if past_state.situation == next_situation:
+                return True
+            past_state = past_state.previous_state
+        return False
     
     def is_valid_move(self, move):
         if self.is_over():
@@ -193,23 +189,3 @@ class GameState:
             self.board.get(move.point) is None and
             not self.is_move_self_capture(self.next_player, move) and
             not self.does_move_violate_ko(self.next_player, move))
-    
-    def legal_moves(self):
-        moves = []
-        for row in range(1, self.board.num_rows + 1):
-            for col in range(1, self.board.num_cols + 1):
-                move = Move.play(Point(row, col))
-                if self.is_valid_move(move):
-                    moves.append(move)
-        # These two moves are always legal.
-        moves.append(Move.pass_turn())
-        moves.append(Move.resign())
-        return moves
-    
-    def winner(self):
-        if not self.is_over():
-            return None
-        if self.last_move.is_resign:
-            return self.next_player
-        game_result = scoring.compute_game_result(self)
-        return game_result.winner
