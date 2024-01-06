@@ -24,7 +24,7 @@ def main():
         game = goboard.GameState.new_game(board_size)
         bots = {
             gotypes.Player.black: RandomBot(),
-            gotypes.Player.white: MinimaxAgent(),
+            gotypes.Player.white: MinimaxAgent(depth=2),
         }
 
         while not game.is_over():

@@ -15,7 +15,6 @@ def reverse_game_result(game_result):
         return game_result.loss
     return GameResult.draw
 
-
 def best_result(game_state, depth):
     if game_state.is_over():
         if game_state.winner() == game_state.next_player:
@@ -25,7 +24,7 @@ def best_result(game_state, depth):
         else:
             return GameResult.loss
         
-    if depth == 0: #If we've bottomed out here
+    if depth == 0:
         return GameResult.draw
 
     best_result_so_far = GameResult.loss
@@ -38,13 +37,17 @@ def best_result(game_state, depth):
     return best_result_so_far
 
 class MinimaxAgent(Agent):
-    def select_move(self, game_state, depth=2):
+
+    def __init__(self, depth=1):
+        self.depth = depth
+
+    def select_move(self, game_state):
         winning_moves = []
         draw_moves = []
         losing_moves = []
         for possible_move in game_state.legal_moves():
             next_state = game_state.apply_move(possible_move)
-            opponent_best_outcome = best_result(next_state, depth-1)
+            opponent_best_outcome = best_result(next_state, self.depth-1)
             our_best_outcome = reverse_game_result(opponent_best_outcome)
             if our_best_outcome == GameResult.win:
                 winning_moves.append(possible_move)
