@@ -11,15 +11,19 @@ import time
 import pandas as pd
 
 BOARD_SIZE = 9
-REPS = 1
+REPS = 2
+GAME_COUNT = 0
 
-model_pool = [RandomBot(), MinimaxAgent(depth=1), MinimaxAgent(depth=2)]
-model_names = ["Random", "Minimax1", "Minimax2"]
+# More models can be dropped in here as name:object pairs
+models = {
+    "Random": RandomBot(),
+    "Minimax1": MinimaxAgent(depth=1),
+    "Minimax2": MinimaxAgent(depth=2)
+}
 
-results = pd.DataFrame(0, index=model_names, columns=model_names)
+results = pd.DataFrame(0, index=models.keys(), columns=models.keys(), dtype=float)
 
 def play(m1, n1, m2, n2):
-    print("Playing ", n1, " against ", n2, "for ", REPS, " games")
 
     clock = 0
     times = [0, 0]
@@ -27,6 +31,9 @@ def play(m1, n1, m2, n2):
     wins = [0, 0]
 
     for e in range(REPS):
+        global GAME_COUNT
+        GAME_COUNT += 1
+        print("    [->] Playing game ", GAME_COUNT, " of ", total_games, ": ", n1, " against ", n2)
 
         board_size = BOARD_SIZE
         game = goboard.GameState.new_game(board_size)
@@ -55,13 +62,25 @@ def play(m1, n1, m2, n2):
         else:
             wins[1] += 1
 
-        results.loc[n1, n2] = wins[0]/REPS
-        results.loc[n2, n1] = 0
+    results.loc[n1, n2] = wins[1]/REPS
+    results.loc[n2, n1] = 1-(wins[1]/REPS)
+    print("[!] ", n1, " beats ", n2, " in ", wins[0], " of ", REPS, " games")
 
-# play all models against each other, store the results in a matrix
+total_games = int((len(models) **2 )*REPS)
 
-for e in range(len(model_pool)):
-    for f in range(len(model_pool[e:])):
-        play(model_pool[e], model_names[e], model_pool[f], model_names[f])
+for e in models.keys():
+    for f in models.keys():
+        play(models[e], e, models[f], f)
 
+
+# minimax<3 and random agents never score enough points to overcome the Komi advantage of 6.5, resulting in complete white victory. 
+
+# CSV Structure:
+# Columns: model playing white
+# Rows: model playing black
+# Value: Black's win rate
+
+results = results.round(2)
 results.to_csv("tournament_results.csv")
+
+# TODO: add measurements for time to make move and moves per game
