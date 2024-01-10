@@ -86,3 +86,12 @@ def view_boardtiles(board):
         ans[board.num_rows - 1][board.num_rows - 1] = 10
 
     return ans.tolist()
+
+
+# TODO
+def stone_scores(board):
+    scores = {
+        "black": 0,
+        "white": 0
+    }
+    return scores

@@ -3,7 +3,7 @@ version: '3'
 tasks:
     backend:
         cmds:
-            - python3 backend/server.py
+            - python3 backend_v2.py
     frontend:
         cmds:
             - cd frontend && npm start
