@@ -5,7 +5,7 @@ from dlgo import gotypes
 from dlgo.agent.naive import RandomBot
 from dlgo.agent.minimax import MinimaxAgent
 
-from dlgo.utils import print_board, print_move
+from dlgo.utils import print_board, print_move, view_boardtiles
 import time
 
 def main():
@@ -44,6 +44,7 @@ def main():
             game = game.apply_move(bot_move)
             #print(chr(27) + "[2J")
             #print_board(game.board)
+            print(view_boardtiles(game.board))
         
         if game.winner() == gotypes.Player.black:
             wins[0] += 1
