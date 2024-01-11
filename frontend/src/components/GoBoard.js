@@ -137,7 +137,7 @@ const GoBoard = ({ onClick }) => {
         <div style={{ display: 'grid', gridTemplateColumns: `repeat(${boardState.length}, ${cellSize}px)` }}>
           {boardState.map((row, rowIndex) =>
             row.map((cell, colIndex) => (
-              <div key={`${rowIndex}-${colIndex}`} style={assetStyles.cell} onClick={() => handleCellClick(rowIndex, colIndex)}>
+              <div key={`${rowIndex}-${colIndex}`} style={assetStyles.cell} onClick={() => handleCellClick((rowIndex+1), (colIndex+1))}>
                 {cell === 0 && <img src={empty} alt="Empty" style={assetStyles.cell} />}
                 {cell === -1 && <img src={white} alt="White" style={assetStyles.cell} />}
                 {cell === 1 && <img src={black} alt="Black" style={assetStyles.cell} />}

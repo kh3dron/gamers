@@ -23,7 +23,7 @@ CORS(app)
 def place_stone():
     global game
     p = request.json.get('move')
-    move = goboard.Move.play(goboard.Point(row=p['row'], col=p['col']))
+    move = goboard.Move.play(gotypes.Point(row=p["row"], col=p["col"]))
     game = game.apply_move(move)
     return jsonify(view_boardtiles(game.board))
 
