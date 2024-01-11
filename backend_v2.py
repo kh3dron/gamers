@@ -29,20 +29,23 @@ def place_stone():
 
 @app.route('/get_board', methods=['GET'])
 def get_game_state():
+    global game
     return jsonify(view_boardtiles(game.board))
 
 @app.route('/reset', methods=['GET'])
 def reset():
     global game
     game = goboard.GameState.new_game(board_size)
-    return jsonify(view_boardtiles(game))
+    return jsonify(view_boardtiles(game.board))
 
 @app.route('/gamestats', methods=['GET'])
 def placed_stones():
+    global game
     return stone_scores(game)
 
 @app.route('/agent_random', methods=['GET'])
 def agent_random():
+    global game
     try:
         sleep_time = 0.2
         time.sleep(sleep_time)
