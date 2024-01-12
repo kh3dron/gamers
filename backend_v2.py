@@ -17,13 +17,11 @@ game = goboard.GameState.new_game(board_size)
 app = Flask(__name__)
 CORS(app)
 
-
-# TODO
 @app.route('/place_stone', methods=['PUT'])
 def place_stone():
     global game
     p = request.json.get('move')
-    move = goboard.Move.play(gotypes.Point(row=p["row"], col=p["col"]))
+    move = goboard.Move.play(gotypes.Point(row=(9-p["row"]), col=(p["col"]+1))) #ugly but easy fix
     game = game.apply_move(move)
     return jsonify(view_boardtiles(game.board))
 
