@@ -52,6 +52,9 @@ class GoString:
             self.stones == other.stones and \
             self.liberties == other.liberties
     
+    def __str__(self) -> str:
+        return f"GoString({self.color}, {self.stones}, {self.liberties})"
+    
 class Board:
     def __init__(self, num_rows, num_cols):
         self.num_rows = num_rows

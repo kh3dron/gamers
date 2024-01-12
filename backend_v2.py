@@ -39,7 +39,7 @@ def reset():
 @app.route('/gamestats', methods=['GET'])
 def placed_stones():
     global game
-    return stone_scores(game)
+    return jsonify(stone_scores(game.board))
 
 @app.route('/agent_random', methods=['GET'])
 def agent_random():
