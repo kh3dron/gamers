@@ -62,21 +62,21 @@ class Board:
         self._grid = {}
         self._hash = zobrist.EMPTY_BOARD
 
-    def place_stone(self, player, point):  
-     assert self.is_on_grid(point)
-     assert self._grid.get(point) is None
-     adjacent_same_color = []
-     adjacent_opposite_color = []
-     liberties = []
-     for neighbor in point.neighbors():
-        if not self.is_on_grid(neighbor):
-            continue
-        neighbor_string = self._grid.get(neighbor)
-        if neighbor_string is None:
-            liberties.append(neighbor)
-        elif neighbor_string.color == player:
-            if neighbor_string not in adjacent_same_color:
-                adjacent_same_color.append(neighbor_string)
+    def place_stone(self, player, point):
+        assert self.is_on_grid(point)
+        assert self._grid.get(point) is None
+        adjacent_same_color = []
+        adjacent_opposite_color = []
+        liberties = []
+        for neighbor in point.neighbors():
+            if not self.is_on_grid(neighbor):
+                continue
+            neighbor_string = self._grid.get(neighbor)
+            if neighbor_string is None:
+                liberties.append(neighbor)
+            elif neighbor_string.color == player:
+                if neighbor_string not in adjacent_same_color:
+                    adjacent_same_color.append(neighbor_string)
             else:
                 if neighbor_string not in adjacent_opposite_color:
                     adjacent_opposite_color.append(neighbor_string)
