@@ -61,10 +61,12 @@ class Board:
         self.num_cols = num_cols
         self._grid = {}
         self._hash = zobrist.EMPTY_BOARD
+        self._log = []
 
     def place_stone(self, player, point):
         assert self.is_on_grid(point)
         assert self._grid.get(point) is None
+        self._log.append((player, point))
         adjacent_same_color = []
         adjacent_opposite_color = []
         liberties = []

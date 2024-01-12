@@ -10,7 +10,7 @@ from six.moves import input
 
 import time
 
-board_size = 13
+board_size = 9
 game = goboard.GameState.new_game(board_size)
 
 
