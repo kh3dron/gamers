@@ -105,6 +105,17 @@ const GoBoard = ({ onClick }) => {
     }
   };
 
+function handlePassClick() {
+  fetch('http://localhost:3001/pass', {
+    method: 'PUT',
+  })
+    .then(response => response.json())
+    .then(data => {
+      const formattedJson = JSON.stringify(data, null, 2);
+    })
+    .catch(error => console.error('Error fetching data:', error));
+}
+
   function getData() {
     fetch('http://localhost:3001/gamestats')
       .then(response => response.json())

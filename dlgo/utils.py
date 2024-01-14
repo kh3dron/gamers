@@ -102,5 +102,5 @@ def stone_scores(board):
     return {
         "black stones": black,
         "white stones": white,
-        "last move played": str(board._log[-1]),
+        "last move played": str(board._log),
     }

@@ -25,6 +25,14 @@ def place_stone():
     game = game.apply_move(coords)
     return jsonify(view_boardtiles(game.board))
 
+@app.route("/pass", methods=['PUT'])
+def pass_turn():
+    global game
+    game = game.apply_move(goboard.Move.pass_turn())
+    print("PASSING")
+    print_board(game.board)
+    return jsonify(view_boardtiles(game.board))
+
 @app.route('/get_board', methods=['GET'])
 def get_game_state():
     global game

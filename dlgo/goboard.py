@@ -3,7 +3,7 @@ from dlgo.gotypes import Player, Point
 from dlgo import zobrist
 from dlgo import scoring
 
-class Move():
+class Move:
     def __init__(self, point=None, is_pass=False, is_resign=False):
         assert (point is not None) ^ is_pass ^ is_resign
         self.point = point
@@ -14,14 +14,21 @@ class Move():
     @classmethod
     def play(cls, point):
         return Move(point=point)
-    
+
     @classmethod
     def pass_turn(cls):
         return Move(is_pass=True)
-    
+
     @classmethod
     def resign(cls):
-        return Move(is_resign=True)  
+        return Move(is_resign=True)
+
+    def __str__(self):
+        if self.is_pass:
+            return 'pass'
+        if self.is_resign:
+            return 'resign'
+        return '(r %d, c %d)' % (self.point.row, self.point.col)
 
 class GoString:
     def __init__(self, color, stones, liberties):
@@ -150,6 +157,7 @@ class GameState:
             next_board.place_stone(self.next_player, move.point)
         else:
             next_board = self.board
+            print(move)
         return GameState(next_board, self.next_player.other, self, move)
         
     @classmethod
