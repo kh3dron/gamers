@@ -105,7 +105,7 @@ const GoBoard = ({ onClick }) => {
     }
   };
 
-function handlePassClick() {
+  async function handlePassClick() {
   fetch('http://localhost:3001/pass', {
     method: 'PUT',
   })
@@ -114,6 +114,10 @@ function handlePassClick() {
       const formattedJson = JSON.stringify(data, null, 2);
     })
     .catch(error => console.error('Error fetching data:', error));
+
+    getData();
+    await playRandom();
+    getData();
 }
 
   function getData() {
