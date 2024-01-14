@@ -89,12 +89,12 @@ def view_boardtiles(board):
 
 
 # TODO
-def stone_scores(board):
+def stone_scores(game):
     black = 0
     white = 0
-    for row in range(board.num_rows, 0, -1):
-        for col in range(1, board.num_cols + 1):
-            stone = board.get(gotypes.Point(row=row, col=col))
+    for row in range(game.board.num_rows, 0, -1):
+        for col in range(1, game.board.num_cols + 1):
+            stone = game.board.get(gotypes.Point(row=row, col=col))
             if stone == gotypes.Player.black:
                 black += 1
             elif stone == gotypes.Player.white:
@@ -102,5 +102,5 @@ def stone_scores(board):
     return {
         "black stones": black,
         "white stones": white,
-        "last move played": str(board._log),
+        "last move played": str(game.log),
     }

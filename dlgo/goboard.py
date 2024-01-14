@@ -68,12 +68,10 @@ class Board:
         self.num_cols = num_cols
         self._grid = {}
         self._hash = zobrist.EMPTY_BOARD
-        self._log = []
 
     def place_stone(self, player, point):
         assert self.is_on_grid(point)
         assert self._grid.get(point) is None
-        self._log.append((player, point))
         adjacent_same_color = []
         adjacent_opposite_color = []
         liberties = []
@@ -139,7 +137,7 @@ class Board:
         return self._hash
 
 class GameState:
-    def __init__(self, board, next_player, previous, move):
+    def __init__(self, board, next_player, previous, move, log=[]):
         self.board = board
         self.next_player = next_player
         self.previous_state = previous
@@ -150,6 +148,7 @@ class GameState:
                 previous.previous_states |
                 {(previous.next_player, previous.board.zobrist_hash())})
         self.last_move = move
+        self.log = log
         
     def apply_move(self, move):
         if move.is_play:
@@ -157,8 +156,8 @@ class GameState:
             next_board.place_stone(self.next_player, move.point)
         else:
             next_board = self.board
-            print(move)
-        return GameState(next_board, self.next_player.other, self, move)
+        self.log.append(str(move))
+        return GameState(next_board, self.next_player.other, self, move, self.log)
         
     @classmethod
     def new_game(cls, board_size):

@@ -29,8 +29,6 @@ def place_stone():
 def pass_turn():
     global game
     game = game.apply_move(goboard.Move.pass_turn())
-    print("PASSING")
-    print_board(game.board)
     return jsonify(view_boardtiles(game.board))
 
 @app.route('/get_board', methods=['GET'])
@@ -41,13 +39,14 @@ def get_game_state():
 @app.route('/reset', methods=['GET'])
 def reset():
     global game
-    game = goboard.GameState.new_game(board_size)
+    newgame = goboard.GameState.new_game(board_size)
+    game = newgame
     return jsonify(view_boardtiles(game.board))
 
 @app.route('/gamestats', methods=['GET'])
 def placed_stones():
     global game
-    return jsonify(stone_scores(game.board))
+    return jsonify(stone_scores(game))
 
 @app.route('/agent_random', methods=['GET'])
 def agent_random():
