@@ -10,7 +10,7 @@ from six.moves import input
 
 import time
 
-board_size = 9
+board_size = 5
 game = goboard.GameState.new_game(board_size)
 
 
@@ -22,6 +22,11 @@ def place_stone():
     global game
     p = request.json.get('move')
     coords = goboard.Move.play(gotypes.Point(row=(board_size-p["row"]), col=(p["col"]+1)))
+
+    if not game.is_valid_move(coords):
+        print("Invalid move")
+        return jsonify(view_boardtiles(game.board))
+    
     game = game.apply_move(coords)
     return jsonify(view_boardtiles(game.board))
 

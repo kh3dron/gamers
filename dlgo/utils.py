@@ -49,7 +49,7 @@ def view_boardtiles(board):
         startp = [[4, 4]]
     elif board.num_rows == 13:
         startp = [[3, 3], [3, 9], [6, 6], [9, 3], [9, 9]]
-    else:
+    elif board.num_rows == 19:
         startp = [
             [3, 3],
             [3, 9],
@@ -62,9 +62,10 @@ def view_boardtiles(board):
             [15, 15],
         ]
 
-    for i in range(len(startp)):
-        if ans[startp[i][0]][startp[i][1]] == 0:
-            ans[startp[i][0]][startp[i][1]] = 11
+    if board.num_rows in [9, 13, 19]:
+        for i in range(len(startp)):
+            if ans[startp[i][0]][startp[i][1]] == 0:
+                ans[startp[i][0]][startp[i][1]] = 11
 
     for i in range(board.num_rows):
         if ans[0, i] == 0:
@@ -88,7 +89,7 @@ def view_boardtiles(board):
     return ans.tolist()
 
 
-# TODO
+# TODO print this nicer
 def stone_scores(game):
     black = 0
     white = 0
@@ -104,8 +105,6 @@ def stone_scores(game):
     else:
         last_move = None,
     return {
-
-
         "black stones": black,
         "white stones": white,
         "last move played": last_move
