@@ -10,9 +10,9 @@ TODOs:
     - [ ] Minmax with alpha/beta pruning with heuristics 
     - [ ] NNs with X parameters & Y compute-hours
 
-- [ ] More GUIs everywhere
-- [ ] Re-integrate frontend, backend with dlgo state representations
 - [ ] Export game / log games to GTP
-- [ ] Benchmark model v. model tournaments on 4060Ti, or public GPUs
-  - [ ] "Bracket" program to run all model v. model comps, output to readme
-- [ ] Pickle models to run inference in browser would be great
+
+KNOWN BUGS 
+- [ ] Web UI: 
+  - [ ] Game doesn't end after double passing
+  - [ ] Illegal placements allowed by black 

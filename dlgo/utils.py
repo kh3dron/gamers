@@ -99,8 +99,14 @@ def stone_scores(game):
                 black += 1
             elif stone == gotypes.Player.white:
                 white += 1
+    if game.log:
+        last_move = str(game.log[-1]),
+    else:
+        last_move = None,
     return {
+
+
         "black stones": black,
         "white stones": white,
-        "last move played": str(game.log),
+        "last move played": last_move
     }
