@@ -1,4 +1,3 @@
-// GoBoard.js
 import React, { useEffect, useState } from 'react';
 
 import black from './assets/b.png';
@@ -19,7 +18,6 @@ import s from './assets/s.png';
 
 const GoBoard = ({ onClick }) => {
   const [isProcessingMove, setIsProcessingMove] = useState(false);
-
   const cellSize = 50;
 
   const assetStyles = {
@@ -27,65 +25,63 @@ const GoBoard = ({ onClick }) => {
       width: `${cellSize}px`,
       height: `${cellSize}px`,
       position: 'relative',
-      overflow: 'hidden', // Ensure child elements don't overflow the cell
-      cursor: 'pointer', // Set cursor to pointer to indicate clickable
+      overflow: 'hidden',
+      cursor: 'pointer',
     }
   };
 
   const [boardState, setBoardState] = useState([]);
 
   useEffect(() => {
-    fetch('http://localhost:3001/get_board')
-      .then(response => response.json())
-      .then(data => setBoardState(data))
-      .catch(error => console.error('Error fetching initial board state:', error));
-    getData();
+    fetchBoardState();
   }, []);
 
-  const handleCellClick = async (rowIndex, colIndex) => {
-  if (isProcessingMove || boardState[rowIndex][colIndex] == 1 || boardState[rowIndex][colIndex] == -1) {
-    // If processing move or there's already a stone, return early
-    return;
-  }
-
-  const maxAttempts = 3; // Set the maximum number of retry attempts
-  let attempts = 0;
-
-  while (attempts < maxAttempts) {
+  const fetchBoardState = async () => {
     try {
-      setIsProcessingMove(true);
-
-      const response = await fetch('http://localhost:3001/place_stone', {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          move: { row: rowIndex, col: colIndex },
-        }),
-      });
-
-      const updatedState = await response.json();
-      setBoardState(updatedState);
-      onClick(rowIndex, colIndex);
+      const response = await fetch('http://localhost:3001/get_board');
+      const data = await response.json();
+      setBoardState(data);
       getData();
-      await playRandom();
-      getData();
-
-      // If the above code runs without errors, break out of the loop
-      break;
     } catch (error) {
-      console.error('Error updating board state:', error);
-      attempts++;
-
-      // You can add a delay between retry attempts if needed
-      // await new Promise(resolve => setTimeout(resolve, 1000));
-    } finally {
-      setIsProcessingMove(false);
+      console.error('Error fetching initial board state:', error);
     }
-  }
-};
+  };
 
+  const handleCellClick = async (rowIndex, colIndex) => {
+    if (isProcessingMove || boardState[rowIndex][colIndex] === 1 || boardState[rowIndex][colIndex] === -1) {
+      return;
+    }
+
+    const maxAttempts = 3;
+    let attempts = 0;
+
+    while (attempts < maxAttempts) {
+      try {
+        setIsProcessingMove(true);
+        const response = await fetch('http://localhost:3001/place_stone', {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            move: { row: rowIndex, col: colIndex },
+          }),
+        });
+
+        const updatedState = await response.json();
+        setBoardState(updatedState);
+        onClick(rowIndex, colIndex);
+        await playRandom();
+        getData();
+        break;
+      } catch (error) {
+        console.error('Error updating board state:', error);
+        attempts++;
+      } finally {
+        setIsProcessingMove(false);
+      }
+    }
+  };
 
   const resetGame = async () => {
     try {
@@ -99,38 +95,32 @@ const GoBoard = ({ onClick }) => {
       const updatedState = await response.json();
       setBoardState(updatedState);
       getData();
-
     } catch (error) {
       console.error('Error updating board state:', error);
     }
   };
 
-  async function handlePassClick() {
-  fetch('http://localhost:3001/pass', {
-    method: 'PUT',
-  })
-    .then(response => response.json())
-    .then(data => {
-      const formattedJson = JSON.stringify(data, null, 2);
-    })
-    .catch(error => console.error('Error fetching data:', error));
-
+  const handlePassClick = async () => {
+    await fetch('http://localhost:3001/pass', {
+      method: 'PUT',
+    });
     getData();
     await playRandom();
     getData();
-}
+  };
 
-  function getData() {
-    fetch('http://localhost:3001/gamestats')
-      .then(response => response.json())
-      .then(data => {
-        const formattedJson = JSON.stringify(data, null, 2);
-        document.getElementById('boardState').innerHTML = `<pre style="white-space: pre-wrap;">${formattedJson}</pre>`;
-      })
-      .catch(error => console.error('Error fetching data:', error));
-  }
+  const getData = async () => {
+    try {
+      const response = await fetch('http://localhost:3001/gamestats');
+      const data = await response.json();
+      const formattedJson = JSON.stringify(data, null, 2);
+      document.getElementById('boardState').innerHTML = `<pre style="white-space: pre-wrap;">${formattedJson}</pre>`;
+    } catch (error) {
+      console.error('Error fetching data:', error);
+    }
+  };
 
-  const playRandom = async (rowIndex, colIndex) => {
+  const playRandom = async () => {
     try {
       const response = await fetch('http://localhost:3001/agent_random', {
         method: 'GET',
@@ -138,11 +128,9 @@ const GoBoard = ({ onClick }) => {
 
       const updatedState = await response.json();
       setBoardState(updatedState);
-      onClick(rowIndex, colIndex);
       getData();
-
     } catch (error) {
-      console.error('Error uplaying random move:', error);
+      console.error('Error playing random move:', error);
     }
   };
 
@@ -152,11 +140,10 @@ const GoBoard = ({ onClick }) => {
         <div style={{ display: 'grid', gridTemplateColumns: `repeat(${boardState.length}, ${cellSize}px)` }}>
           {boardState.map((row, rowIndex) =>
             row.map((cell, colIndex) => (
-              <div key={`${rowIndex}-${colIndex}`} style={assetStyles.cell} onClick={() => handleCellClick((rowIndex), (colIndex))}>
+              <div key={`${rowIndex}-${colIndex}`} style={assetStyles.cell} onClick={() => handleCellClick(rowIndex, colIndex)}>
                 {cell === 0 && <img src={empty} alt="Empty" style={assetStyles.cell} />}
                 {cell === 2 && <img src={white} alt="White" style={assetStyles.cell} />}
                 {cell === 1 && <img src={black} alt="Black" style={assetStyles.cell} />}
-
                 {cell === 3 && <img src={up} alt="Up" style={assetStyles.cell} />}
                 {cell === 4 && <img src={down} alt="Down" style={assetStyles.cell} />}
                 {cell === 5 && <img src={left} alt="Left" style={assetStyles.cell} />}
@@ -175,9 +162,9 @@ const GoBoard = ({ onClick }) => {
       </div>
 
       <div>
-        <button onClick={() => handlePassClick()}>Pass</button>
+        <button onClick={handlePassClick}>Pass</button>
         <br />
-        <button onClick={() => resetGame()}>Reset Game</button>
+        <button onClick={resetGame}>Reset Game</button>
         <p>Board State:</p>
         <div id="boardState"></div>
       </div>

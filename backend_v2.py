@@ -21,14 +21,19 @@ CORS(app)
 def place_stone():
     global game
     p = request.json.get('move')
-    coords = goboard.Move.play(gotypes.Point(row=(board_size-p["row"]), col=(p["col"]+1)))
+    coords = goboard.Move.play(gotypes.Point(row=(board_size - p["row"]), col=(p["col"] + 1)))
 
     if not game.is_valid_move(coords):
         print("Invalid move")
         return jsonify(view_boardtiles(game.board))
-    
-    game = game.apply_move(coords)
-    return jsonify(view_boardtiles(game.board))
+
+    try:
+        game = game.apply_move(coords)
+        return jsonify(view_boardtiles(game.board))
+    except Exception as e:
+        print("Error applying move:", e)
+        return jsonify(view_boardtiles(game.board)), 500
+
 
 @app.route("/pass", methods=['PUT'])
 def pass_turn():
