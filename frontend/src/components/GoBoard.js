@@ -48,7 +48,7 @@ const GoBoard = ({ onClick }) => {
   };
 
   const handleCellClick = async (rowIndex, colIndex) => {
-    if (isProcessingMove || boardState[rowIndex][colIndex] === 1 || boardState[rowIndex][colIndex] === -1) {
+    if (isProcessingMove || boardState[rowIndex][colIndex] === 1 || boardState[rowIndex][colIndex] === 2) {
       return;
     }
 
